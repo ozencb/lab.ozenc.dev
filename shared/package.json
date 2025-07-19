@@ -11,8 +11,12 @@
       "import": "./dist/index.js"
     },
     "./types": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.js"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.js"
     }
   },
   "files": [
@@ -25,7 +29,8 @@
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
   },
   "keywords": [
     "typescript",

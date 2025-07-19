@@ -34,7 +34,7 @@ lab.ozenc.dev/
   - `description?: string`
   - `version?: string`
   - `entryPoint: string` (default: "index.html")
-- [ ] Create manifest validation utilities
+- [x] Create manifest validation utilities
 - [ ] Create shared build utilities
 
 ## Phase 2: Manifest System
