@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
 import { config } from 'dotenv';
+import path from 'path';
 import apiRouter from './routes/api.js';
 import projectRouter from './routes/projects.js';
 
@@ -42,6 +43,14 @@ if (NODE_ENV === 'development') {
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Static file serving for project assets
+// Serve static files from individual project build directories
+app.use('/assets', express.static(path.join(process.cwd(), 'apps'), {
+  maxAge: NODE_ENV === 'production' ? '1y' : '0',
+  etag: true,
+  lastModified: true
+}));
 
 // Route handlers
 app.use('/api', apiRouter);

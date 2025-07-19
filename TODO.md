@@ -57,7 +57,7 @@ lab.ozenc.dev/
 - [x] Initialize Express.js server in `server/` directory
 - [x] Set up TypeScript configuration for server
 - [x] Create basic routing structure
-- [ ] Set up static file serving for built projects
+- [x] Set up static file serving for built projects
 
 ### 3.2 Core Routing Logic
 - [ ] Implement manifest reading and caching
