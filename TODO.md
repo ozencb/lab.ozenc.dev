@@ -9,8 +9,8 @@ A PNPM monorepo hosting platform for experimental web applications with a centra
 - [x] Set up PNPM workspace configuration (`pnpm-workspace.yaml`)
 - [x] Create root `package.json` with workspace dependencies
 - [x] Set up TypeScript configuration at root level
-- [ ] Create basic `.gitignore` for the monorepo
-- [ ] Set up ESLint and Prettier configurations (optional)
+- [x] Create basic `.gitignore` for the monorepo
+- [ ] Set up ESLint and Prettier configurations 
 
 ### 1.2 Directory Structure
 ```
