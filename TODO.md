@@ -26,7 +26,7 @@ lab.ozenc.dev/
 ```
 
 ### 1.3 Shared Types & Utilities
-- [ ] Create `shared/types/` for TypeScript interfaces
+- [x] Create `shared/types/` for TypeScript interfaces
 - [ ] Define `ProjectManifest` interface with required fields:
   - `slug: string` (unique)
   - `name: string` 
