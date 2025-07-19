@@ -46,7 +46,7 @@ lab.ozenc.dev/
   - [x] Check for duplicate directories
   - [x] Verify directory exists and contains entry point
   - [x] Validate required fields
-- [ ] Add manifest validation to pre-commit hooks
+- [x] Add manifest validation to pre-commit hooks
 
 ### 2.2 Manifest Management Scripts
 - [x] Create `scripts/validate-manifest.js` - Validate manifest integrity
