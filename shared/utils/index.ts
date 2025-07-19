@@ -184,13 +184,7 @@ export const validateManifest = (manifest: Manifest): ValidationResult => {
     return { isValid: false, errors };
   }
 
-  if (!manifest.version || typeof manifest.version !== 'string') {
-    errors.push('manifest must have a version string');
-  }
 
-  if (!manifest.lastUpdated || typeof manifest.lastUpdated !== 'string') {
-    errors.push('manifest must have a lastUpdated string');
-  }
 
   // Validate each project
   for (const project of manifest.projects) {
@@ -268,9 +262,7 @@ export const formatValidationErrors = (result: ValidationResult): string => {
  */
 export const createDefaultManifest = (): Manifest => {
   return {
-    projects: [],
-    version: '1.0.0',
-    lastUpdated: new Date().toISOString()
+    projects: []
   };
 };
 

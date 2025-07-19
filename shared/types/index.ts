@@ -31,12 +31,6 @@ export interface ProjectManifest {
 export interface Manifest {
   /** Array of project configurations */
   projects: ProjectManifest[];
-  
-  /** Manifest schema version for future compatibility */
-  version: string;
-  
-  /** Last updated timestamp */
-  lastUpdated: string;
 }
 
 /**

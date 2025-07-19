@@ -49,10 +49,7 @@ lab.ozenc.dev/
 - [ ] Add manifest validation to pre-commit hooks
 
 ### 2.2 Manifest Management Scripts
-- [ ] Create `scripts/add-project.js` - Add new project to manifest
-- [ ] Create `scripts/remove-project.js` - Remove project from manifest
-- [ ] Create `scripts/validate-manifest.js` - Validate manifest integrity
-- [ ] Create `scripts/sync-manifest.js` - Auto-discover projects (optional)
+- [x] Create `scripts/validate-manifest.js` - Validate manifest integrity
 
 ## Phase 3: Backend Server
 
