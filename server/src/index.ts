@@ -4,6 +4,8 @@ import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
 import { config } from 'dotenv';
+import apiRouter from './routes/api.js';
+import projectRouter from './routes/projects.js';
 
 // Load environment variables
 config();
@@ -41,24 +43,9 @@ if (NODE_ENV === 'development') {
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Health check endpoint
-app.get('/api/health', (_req: express.Request, res: express.Response) => {
-  res.json({
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    environment: NODE_ENV,
-    uptime: process.uptime()
-  });
-});
-
-// Basic route handler (will be expanded in next phases)
-app.get('/', (_req: express.Request, res: express.Response) => {
-  res.json({
-    message: 'lab.ozenc.dev server is running',
-    version: '1.0.0',
-    status: 'ok'
-  });
-});
+// Route handlers
+app.use('/api', apiRouter);
+app.use('/', projectRouter);
 
 // 404 handler
 app.use('*', (req: express.Request, res: express.Response) => {

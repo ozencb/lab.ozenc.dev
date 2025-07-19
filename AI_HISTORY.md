@@ -704,6 +704,68 @@ This file tracks the progress made by AI assistance on the lab.ozenc.dev project
 3. Set up static file serving for built projects
 4. Continue with Phase 3.2 - Core Routing Logic
 
+### Task Completed: Create basic routing structure + Mark TypeScript configuration as done
+**Status:** ✅ Complete  
+**Date:** December 2024  
+
+#### What was done:
+1. **Created Modular Router Architecture** - Implemented clean separation of concerns with dedicated router modules
+   - **API Router** (`server/src/routes/api.ts`) - Handles all `/api/*` endpoints:
+     - `/api/health` - Enhanced health check with environment info and uptime
+     - `/api/projects` - Projects listing endpoint (placeholder for Phase 3.3)
+     - `/api/projects/:slug` - Individual project info endpoint (placeholder)
+     - `/api/projects/validate` - Manifest validation endpoint (dev-only, placeholder)
+   
+   - **Project Router** (`server/src/routes/projects.ts`) - Handles project serving:
+     - `/` - Enhanced hub app route with better messaging and description
+     - `/:slug` - Dynamic project slug routes with validation (placeholder for Phase 3.2)
+
+2. **Enhanced Server Architecture** - Refactored main server file for modularity
+   - Moved route handlers from `server/src/index.ts` to dedicated router modules
+   - Clean import structure with ES modules (`import apiRouter from './routes/api.js'`)
+   - Maintained all existing middleware, security, and error handling
+   - Improved separation of concerns for future development
+
+3. **Advanced Route Features:**
+   - **Input Validation** - Slug format validation with regex pattern (lowercase, numbers, hyphens)
+   - **Environment Awareness** - Development vs production logic for validation endpoints
+   - **Error Handling** - Comprehensive 400/403/501 responses with timestamps and context
+   - **Future Ready** - All placeholder endpoints return helpful 501 responses with implementation notes
+
+4. **TypeScript & Build Quality:**
+   - **Proper Typing** - All routes use Express Request/Response types with explicit Router typing
+   - **Build Verification** - Successfully compiles to JavaScript with source maps and declarations
+   - **Code Quality** - Fixed all TypeScript linting errors (return statements, unused variables)
+   - **ES Modules** - Modern import/export structure throughout
+
+5. **Updated TODO.md** - Marked two tasks as completed:
+   - Changed `- [ ] Set up TypeScript configuration for server` to `- [x]` (was already implemented in previous session)
+   - Changed `- [ ] Create basic routing structure` to `- [x] Create basic routing structure`
+
+#### Files Created/Modified:
+- `server/src/routes/api.ts` (new file - 1.5KB API router module)
+- `server/src/routes/projects.ts` (new file - 1.2KB project router module)
+- `server/src/index.ts` (refactored - removed inline routes, added router imports)
+- `TODO.md` (updated - marked 2 tasks complete)
+
+#### Project Status:
+- **Current Phase:** Phase 3.1 - Server Setup (nearly complete)
+- **Next Task:** Set up static file serving for built projects
+- **Overall Progress:** 15/229 tasks completed from TODO list
+
+#### Technical Notes:
+- Routing structure ready for manifest integration and static file serving
+- Foundation established for dynamic project routing in Phase 3.2
+- API endpoints structured for easy expansion in Phase 3.3
+- Modular architecture supports clean development workflow
+- Build system validates TypeScript compilation and generates proper JavaScript output
+
+#### Next Steps:
+1. Set up static file serving for built projects
+2. Continue with Phase 3.2 - Core Routing Logic (manifest reading, project serving)
+3. Implement API endpoints in Phase 3.3
+4. Begin Phase 4 - Hub Application development
+
 ---
 
 *This file is automatically updated by AI assistance to maintain project continuity.* 
