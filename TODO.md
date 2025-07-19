@@ -54,7 +54,7 @@ lab.ozenc.dev/
 ## Phase 3: Backend Server
 
 ### 3.1 Server Setup
-- [ ] Initialize Express.js server in `server/` directory
+- [x] Initialize Express.js server in `server/` directory
 - [ ] Set up TypeScript configuration for server
 - [ ] Create basic routing structure
 - [ ] Set up static file serving for built projects
