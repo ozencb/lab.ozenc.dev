@@ -39,10 +39,10 @@ export const validateProjectManifest = (project: ProjectManifest): ValidationRes
   if (!project.directory || typeof project.directory !== 'string') {
     errors.push('directory is required and must be a string');
   } else {
-    // Validate directory name (alphanumeric with hyphens/underscores)
-    const dirRegex = /^[a-zA-Z0-9_-]+$/;
+    // Validate directory path (alphanumeric with hyphens/underscores/slashes for nested paths)
+    const dirRegex = /^[a-zA-Z0-9_/-]+$/;
     if (!dirRegex.test(project.directory)) {
-      errors.push('directory must contain only alphanumeric characters, hyphens, and underscores');
+      errors.push('directory must contain only alphanumeric characters, hyphens, underscores, and forward slashes');
     }
   }
 

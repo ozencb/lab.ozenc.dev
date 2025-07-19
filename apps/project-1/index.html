@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project One - Example Vanilla JS Project</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            text-align: center;
+            max-width: 600px;
+        }
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+        .demo {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2rem;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+        button {
+            background: #fff;
+            color: #ff6b6b;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        #counter {
+            font-size: 2rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Project One</h1>
+        <p>Example vanilla JavaScript project demonstrating basic interactivity</p>
+        <div class="demo">
+            <h3>Interactive Counter Demo</h3>
+            <div id="counter">0</div>
+            <button onclick="increment()">Click me!</button>
+        </div>
+    </div>
+
+    <script>
+        let count = 0;
+        const counter = document.getElementById('counter');
+        
+        function increment() {
+            count++;
+            counter.textContent = count;
+            
+            // Add some visual feedback
+            counter.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                counter.style.transform = 'scale(1)';
+            }, 200);
+        }
+        
+        // Add transition effect
+        counter.style.transition = 'transform 0.2s ease-in-out';
+    </script>
+</body>
+</html> 

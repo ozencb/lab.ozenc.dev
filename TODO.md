@@ -41,11 +41,11 @@ lab.ozenc.dev/
 
 ### 2.1 Manifest Structure & Validation
 - [x] Create `manifest.json` in root directory
-- [ ] Implement manifest validation script:
-  - [ ] Check for duplicate slugs
-  - [ ] Check for duplicate directories
-  - [ ] Verify directory exists and contains entry point
-  - [ ] Validate required fields
+- [x] Implement manifest validation script:
+  - [x] Check for duplicate slugs
+  - [x] Check for duplicate directories
+  - [x] Verify directory exists and contains entry point
+  - [x] Validate required fields
 - [ ] Add manifest validation to pre-commit hooks
 
 ### 2.2 Manifest Management Scripts

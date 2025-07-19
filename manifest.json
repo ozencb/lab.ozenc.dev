@@ -5,7 +5,7 @@
     {
       "slug": "hub",
       "name": "Lab Hub",
-      "directory": "apps/hub",
+      "directory": "hub",
       "description": "Main React application serving as the central hub for all experimental projects",
       "version": "1.0.0",
       "entryPoint": "index.html"
@@ -13,7 +13,7 @@
     {
       "slug": "project-1",
       "name": "Project One",
-      "directory": "apps/project-1",
+      "directory": "project-1",
       "description": "Example experimental project - simple vanilla JavaScript application",
       "version": "0.1.0",
       "entryPoint": "index.html"
@@ -21,7 +21,7 @@
     {
       "slug": "project-2",
       "name": "Project Two", 
-      "directory": "apps/project-2",
+      "directory": "project-2",
       "description": "Example experimental project - modern web application with build tools",
       "version": "0.1.0",
       "entryPoint": "index.html"
