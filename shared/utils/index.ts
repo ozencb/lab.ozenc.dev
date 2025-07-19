@@ -2,75 +2,90 @@
  * Shared utilities for the lab.ozenc.dev monorepo
  */
 
-import { readFileSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
-import type { ProjectManifest, Manifest } from '../types/index.js';
+import fs from 'fs/promises';
+import path from 'path';
+import { Manifest, ProjectManifest } from '../types/index.js';
 
 /**
- * Validation error interface
+ * Validation result interface for consistent error reporting
  */
-export interface ValidationError {
-  field?: string;
-  message: string;
+export interface ValidationResult {
+  isValid: boolean;
+  errors: string[];
   project?: string;
 }
 
 /**
- * Validation result interface
- */
-export interface ValidationResult {
-  isValid: boolean;
-  errors: ValidationError[];
-}
-
-/**
- * Validates a single ProjectManifest object
+ * Validates an individual ProjectManifest object
  */
 export const validateProjectManifest = (project: ProjectManifest): ValidationResult => {
-  const errors: ValidationError[] = [];
+  const errors: string[] = [];
 
   // Check required fields
   if (!project.slug || typeof project.slug !== 'string') {
-    errors.push({ field: 'slug', message: 'Slug is required and must be a string', project: project.name || 'unknown' });
+    errors.push('slug is required and must be a string');
+  } else {
+    // Validate slug format (kebab-case, URL-safe)
+    const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+    if (!slugRegex.test(project.slug)) {
+      errors.push('slug must be in kebab-case format (lowercase letters, numbers, and hyphens only)');
+    }
   }
 
   if (!project.name || typeof project.name !== 'string') {
-    errors.push({ field: 'name', message: 'Name is required and must be a string', project: project.slug || 'unknown' });
+    errors.push('name is required and must be a string');
   }
 
   if (!project.directory || typeof project.directory !== 'string') {
-    errors.push({ field: 'directory', message: 'Directory is required and must be a string', project: project.slug || 'unknown' });
+    errors.push('directory is required and must be a string');
+  } else {
+    // Validate directory name (alphanumeric with hyphens/underscores)
+    const dirRegex = /^[a-zA-Z0-9_-]+$/;
+    if (!dirRegex.test(project.directory)) {
+      errors.push('directory must contain only alphanumeric characters, hyphens, and underscores');
+    }
   }
 
   if (!project.entryPoint || typeof project.entryPoint !== 'string') {
-    errors.push({ field: 'entryPoint', message: 'Entry point is required and must be a string', project: project.slug || 'unknown' });
+    errors.push('entryPoint is required and must be a string');
   }
 
-  // Validate slug format (URL-safe)
-  if (project.slug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(project.slug)) {
-    errors.push({ 
-      field: 'slug', 
-      message: 'Slug must be lowercase, alphanumeric, and may contain hyphens (kebab-case)', 
-      project: project.slug 
-    });
+  // Validate optional fields if present
+  if (project.description !== undefined && typeof project.description !== 'string') {
+    errors.push('description must be a string if provided');
   }
 
-  // Validate directory format (no special characters except hyphens and underscores)
-  if (project.directory && !/^[a-zA-Z0-9_-]+$/.test(project.directory)) {
-    errors.push({ 
-      field: 'directory', 
-      message: 'Directory name must contain only alphanumeric characters, hyphens, and underscores', 
-      project: project.slug || 'unknown' 
-    });
+  if (project.version !== undefined && typeof project.version !== 'string') {
+    errors.push('version must be a string if provided');
   }
 
-  // Validate optional fields if provided
-  if (project.description && typeof project.description !== 'string') {
-    errors.push({ field: 'description', message: 'Description must be a string', project: project.slug || 'unknown' });
+  return {
+    isValid: errors.length === 0,
+    errors,
+    project: project.slug
+  };
+};
+
+/**
+ * Checks for duplicate slugs across projects
+ */
+export const checkDuplicateSlugs = (projects: ProjectManifest[]): ValidationResult => {
+  const slugCounts = new Map<string, number>();
+  const errors: string[] = [];
+
+  // Count occurrences of each slug
+  for (const project of projects) {
+    if (project.slug) {
+      const count = slugCounts.get(project.slug) || 0;
+      slugCounts.set(project.slug, count + 1);
+    }
   }
 
-  if (project.version && typeof project.version !== 'string') {
-    errors.push({ field: 'version', message: 'Version must be a string', project: project.slug || 'unknown' });
+  // Find duplicates
+  for (const [slug, count] of slugCounts.entries()) {
+    if (count > 1) {
+      errors.push(`Duplicate slug found: "${slug}" appears ${count} times`);
+    }
   }
 
   return {
@@ -80,127 +95,120 @@ export const validateProjectManifest = (project: ProjectManifest): ValidationRes
 };
 
 /**
- * Checks for duplicate slugs in a list of projects
+ * Checks for duplicate directories across projects
  */
-export const checkDuplicateSlugs = (projects: ProjectManifest[]): ValidationError[] => {
-  const slugCounts = new Map<string, number>();
-  const errors: ValidationError[] = [];
+export const checkDuplicateDirectories = (projects: ProjectManifest[]): ValidationResult => {
+  const directoryCounts = new Map<string, number>();
+  const errors: string[] = [];
 
-  projects.forEach(project => {
-    if (project.slug) {
-      slugCounts.set(project.slug, (slugCounts.get(project.slug) || 0) + 1);
-    }
-  });
-
-  slugCounts.forEach((count, slug) => {
-    if (count > 1) {
-      errors.push({
-        field: 'slug',
-        message: `Duplicate slug found: "${slug}" appears ${count} times`,
-        project: slug
-      });
-    }
-  });
-
-  return errors;
-};
-
-/**
- * Checks for duplicate directories in a list of projects
- */
-export const checkDuplicateDirectories = (projects: ProjectManifest[]): ValidationError[] => {
-  const directoryCounts = new Map<string, string[]>();
-  const errors: ValidationError[] = [];
-
-  projects.forEach(project => {
+  // Count occurrences of each directory
+  for (const project of projects) {
     if (project.directory) {
-      const existing = directoryCounts.get(project.directory) || [];
-      existing.push(project.slug || 'unknown');
-      directoryCounts.set(project.directory, existing);
+      const count = directoryCounts.get(project.directory) || 0;
+      directoryCounts.set(project.directory, count + 1);
     }
-  });
+  }
 
-  directoryCounts.forEach((projectSlugs, directory) => {
-    if (projectSlugs.length > 1) {
-      errors.push({
-        field: 'directory',
-        message: `Duplicate directory found: "${directory}" used by projects: ${projectSlugs.join(', ')}`,
-        project: projectSlugs.join(', ')
-      });
+  // Find duplicates
+  for (const [directory, count] of directoryCounts.entries()) {
+    if (count > 1) {
+      errors.push(`Duplicate directory found: "${directory}" appears ${count} times`);
     }
-  });
+  }
 
-  return errors;
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
 };
 
 /**
- * Verifies that project directories exist and contain entry points
+ * Verifies that project directories and entry points exist on the filesystem
  */
-export const verifyProjectDirectories = (projects: ProjectManifest[], rootPath: string = process.cwd()): ValidationError[] => {
-  const errors: ValidationError[] = [];
+export const verifyProjectDirectories = async (
+  projects: ProjectManifest[],
+  baseDir: string = process.cwd()
+): Promise<ValidationResult> => {
+  const errors: string[] = [];
 
-  projects.forEach(project => {
-    if (!project.directory || !project.entryPoint) return;
+  for (const project of projects) {
+    const projectDir = path.join(baseDir, 'apps', project.directory);
+    
+    try {
+      // Check if project directory exists
+      const dirStats = await fs.stat(projectDir);
+      if (!dirStats.isDirectory()) {
+        errors.push(`Project directory "${project.directory}" exists but is not a directory`);
+        continue;
+      }
 
-    const projectPath = join(rootPath, 'apps', project.directory);
-    const entryPointPath = join(projectPath, project.entryPoint);
+      // Check if entry point exists within the directory or its build output
+      const entryPointPath = path.join(projectDir, project.entryPoint);
+      const buildEntryPointPath = path.join(projectDir, 'dist', project.entryPoint);
+      const altBuildEntryPointPath = path.join(projectDir, 'build', project.entryPoint);
 
-    // Check if project directory exists
-    if (!existsSync(projectPath)) {
-      errors.push({
-        field: 'directory',
-        message: `Project directory does not exist: apps/${project.directory}`,
-        project: project.slug || 'unknown'
-      });
-      return;
+      try {
+        await fs.access(entryPointPath);
+      } catch {
+        try {
+          await fs.access(buildEntryPointPath);
+        } catch {
+          try {
+            await fs.access(altBuildEntryPointPath);
+          } catch {
+            errors.push(`Entry point "${project.entryPoint}" not found in "${project.directory}" or its build directories`);
+          }
+        }
+      }
+
+    } catch (error) {
+      errors.push(`Project directory "${project.directory}" does not exist or is not accessible`);
     }
+  }
 
-    // Check if entry point exists
-    if (!existsSync(entryPointPath)) {
-      errors.push({
-        field: 'entryPoint',
-        message: `Entry point file does not exist: apps/${project.directory}/${project.entryPoint}`,
-        project: project.slug || 'unknown'
-      });
-    }
-  });
-
-  return errors;
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
 };
 
 /**
- * Validates an entire manifest object
+ * Validates a complete Manifest object
  */
-export const validateManifest = (manifest: Manifest, rootPath?: string): ValidationResult => {
-  const errors: ValidationError[] = [];
+export const validateManifest = (manifest: Manifest): ValidationResult => {
+  const errors: string[] = [];
 
-  // Validate manifest structure
+  // Check manifest structure
   if (!manifest.projects || !Array.isArray(manifest.projects)) {
-    errors.push({ message: 'Manifest must contain a projects array' });
+    errors.push('manifest must have a projects array');
     return { isValid: false, errors };
   }
 
   if (!manifest.version || typeof manifest.version !== 'string') {
-    errors.push({ message: 'Manifest must contain a version string' });
+    errors.push('manifest must have a version string');
   }
 
   if (!manifest.lastUpdated || typeof manifest.lastUpdated !== 'string') {
-    errors.push({ message: 'Manifest must contain a lastUpdated string' });
+    errors.push('manifest must have a lastUpdated string');
   }
 
   // Validate each project
-  manifest.projects.forEach(project => {
+  for (const project of manifest.projects) {
     const projectValidation = validateProjectManifest(project);
-    errors.push(...projectValidation.errors);
-  });
+    if (!projectValidation.isValid) {
+      errors.push(...projectValidation.errors.map(error => `Project "${project.slug || 'unknown'}": ${error}`));
+    }
+  }
 
   // Check for duplicates
-  errors.push(...checkDuplicateSlugs(manifest.projects));
-  errors.push(...checkDuplicateDirectories(manifest.projects));
+  const slugValidation = checkDuplicateSlugs(manifest.projects);
+  if (!slugValidation.isValid) {
+    errors.push(...slugValidation.errors);
+  }
 
-  // Verify directories if rootPath provided
-  if (rootPath) {
-    errors.push(...verifyProjectDirectories(manifest.projects, rootPath));
+  const directoryValidation = checkDuplicateDirectories(manifest.projects);
+  if (!directoryValidation.isValid) {
+    errors.push(...directoryValidation.errors);
   }
 
   return {
@@ -210,38 +218,49 @@ export const validateManifest = (manifest: Manifest, rootPath?: string): Validat
 };
 
 /**
- * Reads and validates a manifest file from disk
+ * Validates a manifest file from disk
  */
-export const validateManifestFile = (manifestPath: string, rootPath?: string): ValidationResult => {
+export const validateManifestFile = async (manifestPath: string): Promise<ValidationResult> => {
   try {
-    // Read manifest file
-    const manifestContent = readFileSync(manifestPath, 'utf-8');
+    // Read and parse manifest file
+    const manifestContent = await fs.readFile(manifestPath, 'utf-8');
     const manifest: Manifest = JSON.parse(manifestContent);
 
-    // Validate the manifest
-    return validateManifest(manifest, rootPath);
+    // Validate manifest structure
+    const manifestValidation = validateManifest(manifest);
+    if (!manifestValidation.isValid) {
+      return manifestValidation;
+    }
+
+    // Verify project directories exist
+    const baseDir = path.dirname(manifestPath);
+    const directoryValidation = await verifyProjectDirectories(manifest.projects, baseDir);
+
+    return {
+      isValid: manifestValidation.isValid && directoryValidation.isValid,
+      errors: [...manifestValidation.errors, ...directoryValidation.errors]
+    };
+
   } catch (error) {
     return {
       isValid: false,
-      errors: [{
-        message: `Failed to read or parse manifest file: ${error instanceof Error ? error.message : 'Unknown error'}`
-      }]
+      errors: [`Failed to read or parse manifest file: ${error instanceof Error ? error.message : 'Unknown error'}`]
     };
   }
 };
 
 /**
- * Formats validation errors for display
+ * Formats validation errors for human-readable display
  */
-export const formatValidationErrors = (errors: ValidationError[]): string => {
-  if (errors.length === 0) return 'No validation errors found.';
+export const formatValidationErrors = (result: ValidationResult): string => {
+  if (result.isValid) {
+    return 'Validation passed successfully!';
+  }
 
-  return errors.map(error => {
-    let message = `• ${error.message}`;
-    if (error.field) message += ` (field: ${error.field})`;
-    if (error.project) message += ` (project: ${error.project})`;
-    return message;
-  }).join('\n');
+  const projectPrefix = result.project ? `[${result.project}] ` : '';
+  const errorList = result.errors.map(error => `  - ${projectPrefix}${error}`).join('\n');
+  
+  return `Validation failed with ${result.errors.length} error(s):\n${errorList}`;
 };
 
 /**
@@ -253,4 +272,7 @@ export const createDefaultManifest = (): Manifest => {
     version: '1.0.0',
     lastUpdated: new Date().toISOString()
   };
-}; 
+};
+
+// Export build utilities
+export * from './build.js'; 

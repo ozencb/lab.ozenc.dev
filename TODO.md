@@ -27,7 +27,7 @@ lab.ozenc.dev/
 
 ### 1.3 Shared Types & Utilities
 - [x] Create `shared/types/` for TypeScript interfaces
-- [ ] Define `ProjectManifest` interface with required fields:
+- [x] Define `ProjectManifest` interface with required fields:
   - `slug: string` (unique)
   - `name: string` 
   - `directory: string` (unique)
@@ -35,7 +35,7 @@ lab.ozenc.dev/
   - `version?: string`
   - `entryPoint: string` (default: "index.html")
 - [x] Create manifest validation utilities
-- [ ] Create shared build utilities
+- [x] Create shared build utilities
 
 ## Phase 2: Manifest System
 
