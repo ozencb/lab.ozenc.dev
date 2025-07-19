@@ -69,9 +69,9 @@ lab.ozenc.dev/
 - [ ] Add health check endpoint (`/api/health`)
 
 ### 3.3 API Endpoints
-- [ ] `GET /api/projects` - List all projects from manifest
-- [ ] `GET /api/projects/:slug` - Get specific project info
-- [ ] `POST /api/projects/validate` - Validate manifest (dev only)
+- [x] `GET /api/projects` - List all projects from manifest
+- [x] `GET /api/projects/:slug` - Get specific project info
+- [x] `POST /api/projects/validate` - Validate manifest (dev only)
 
 ### 3.4 Development Server
 - [ ] Create development mode with hot reloading
