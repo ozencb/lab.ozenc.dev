@@ -906,6 +906,22 @@ This file tracks the progress made by AI assistance on the lab.ozenc.dev project
 3. Set up proxy configuration for local development
 4. Create development workflow scripts
 
+### Task Completed: Implement manifest reading and caching
+**Status:** ✅ Complete  
+**Date:** August 2025  
+
+#### What was done:
+1. Verified manifest reading and caching are fully implemented in the server:
+   - `server/src/routes/api.ts` and `server/src/routes/projects.ts` use `getManifest()` with in-memory cache and mtime-based reload.
+   - No code changes required.
+2. Updated `TODO.md` to mark the task as complete.
+
+#### Files Created/Modified:
+- `TODO.md` (updated - marked task complete)
+
+#### Project Status:
+- Core routing logic piece (manifest caching) confirmed complete. Proceed with remaining Phase 3.2 items.
+
 ---
 
 *This file is automatically updated by AI assistance to maintain project continuity.* 

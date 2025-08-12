@@ -60,7 +60,7 @@ lab.ozenc.dev/
 - [x] Set up static file serving for built projects
 
 ### 3.2 Core Routing Logic
-- [ ] Implement manifest reading and caching
+- [x] Implement manifest reading and caching
 - [ ] Create dynamic route handler for project slugs:
   - [ ] Route `/:slug` to appropriate project directory
   - [ ] Serve project's built `dist/` or `build/` folder
