@@ -51,6 +51,13 @@ export const validateProjectManifest = (
     errors.push('description must be a string if provided');
   }
 
+  if (
+    project.published !== undefined &&
+    typeof project.published !== 'boolean'
+  ) {
+    errors.push('published must be a boolean if provided');
+  }
+
   return {
     isValid: errors.length === 0,
     errors,

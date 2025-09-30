@@ -1,11 +1,11 @@
 import path from 'path';
 import fs from 'fs';
-import { Utils } from '@lab.ozenc.dev/shared';
+import { type Manifest, Utils } from '@lab.ozenc.dev/shared';
 
 let manifestCache: any = null;
 let manifestLastModified: number = 0;
 
-const getManifest = async () => {
+const getManifest = async (): Promise<Manifest | null> => {
   try {
     const manifestPath = path.join(process.cwd(), '..', 'manifest.json');
     const stats = await fs.promises.stat(manifestPath);
@@ -17,13 +17,10 @@ const getManifest = async () => {
       return null;
     }
 
-    // Check if manifest needs to be reloaded
     if (!manifestCache || stats.mtimeMs > manifestLastModified) {
-      // Read and parse manifest file
       const manifestContent = await fs.promises.readFile(manifestPath, 'utf-8');
       const manifest = JSON.parse(manifestContent);
 
-      // Basic validation - check if manifest has projects array
       if (!manifest || !Array.isArray(manifest.projects)) {
         console.error('Manifest validation failed: Invalid manifest structure');
         return null;

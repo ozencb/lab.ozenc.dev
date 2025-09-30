@@ -16,6 +16,7 @@ const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
 const isDevelopment = NODE_ENV === 'development';
+
 let manifestWatcher: fs.FSWatcher | null = null;
 
 app.use(
@@ -95,23 +96,7 @@ if (isDevelopment) {
   }
 }
 
-app.use(
-  '/assets',
-  express.static(path.join(process.cwd(), '..', 'apps'), {
-    maxAge: isDevelopment ? '0' : '1y',
-    etag: true,
-    lastModified: true,
-    setHeaders: (res, _) => {
-      if (isDevelopment) {
-        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.setHeader('Pragma', 'no-cache');
-        res.setHeader('Expires', '0');
-      }
-    },
-  })
-);
-
-app.use('/api', apiRouter);
+app.use('/api', apiRouter(isDevelopment));
 app.use('/', projectsRouter);
 
 app.use((_req: express.Request, res: express.Response) => {
@@ -122,7 +107,6 @@ app.use((_req: express.Request, res: express.Response) => {
   });
 });
 
-// Enhanced error handler for development
 app.use(
   (
     err: Error,
@@ -133,7 +117,6 @@ app.use(
     console.error('💥 Server Error:', err);
 
     if (isDevelopment) {
-      // Detailed error information in development
       res.status(500).json({
         error: 'Internal Server Error',
         message: err.message,

@@ -6,7 +6,8 @@
       "directory": "hub",
       "description": "Main React application serving as the central hub for all experimental projects",
       "version": "1.0.0",
-      "entryPoint": "index.html"
+      "entryPoint": "index.html",
+      "published": true
     },
     {
       "slug": "project-1",
@@ -22,7 +23,8 @@
       "directory": "project-2",
       "description": "Example experimental project - modern web application with build tools",
       "version": "0.1.0",
-      "entryPoint": "index.html"
+      "entryPoint": "index.html",
+      "published": false
     }
   ]
 }

@@ -1,211 +1,106 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import path from 'path';
-import fs from 'fs';
+import fs from 'fs/promises';
 import { Loaders } from '../loaders';
 
 const projectRouter: Router = Router();
-
-// Function to find build directory for a project
-const findBuildDirectory = async (
-  projectDir: string
-): Promise<string | null> => {
-  const projectPath = path.join(process.cwd(), '..', 'apps', projectDir);
-  const buildDirs = ['dist', 'build', 'out'];
-
-  for (const buildDir of buildDirs) {
-    const buildPath = path.join(projectPath, buildDir);
-    try {
-      const stats = await fs.promises.stat(buildPath);
-      if (stats.isDirectory()) {
-        return buildPath;
-      }
-    } catch {
-      // Directory doesn't exist, continue
-    }
-  }
-
-  // Fallback to project directory itself (for development)
-  try {
-    const stats = await fs.promises.stat(projectPath);
-    if (stats.isDirectory()) {
-      return projectPath;
-    }
-  } catch {
-    // Project directory doesn't exist
-  }
-
-  return null;
-};
-
-// Function to serve static files from a directory
-const serveStaticFile = async (
-  res: Response,
-  filePath: string,
-  entryPoint: string
-) => {
-  try {
-    const stats = await fs.promises.stat(filePath);
-    if (stats.isFile()) {
-      return res.sendFile(filePath);
-    }
-  } catch {
-    // File doesn't exist, try serving entry point for SPA routing
-    try {
-      const entryFilePath = path.join(path.dirname(filePath), entryPoint);
-      const entryStats = await fs.promises.stat(entryFilePath);
-      if (entryStats.isFile()) {
-        return res.sendFile(entryFilePath);
-      }
-    } catch {
-      // Entry point doesn't exist either
-    }
-  }
-
-  return res.status(404).json({
-    error: 'Not Found',
-    message: 'The requested file could not be found',
-    timestamp: new Date().toISOString(),
-  });
-};
 
 projectRouter.get('/', (_: Request, res: Response) => {
   res.redirect('/hub');
 });
 
-// Hub app route (root route)
-projectRouter.get('/hub', async (_req: Request, res: Response) => {
-  const manifest = await Loaders.getManifest();
-  if (!manifest) {
-    return res.status(500).json({
-      error: 'Internal Server Error',
-      message: 'Could not load project manifest',
-      timestamp: new Date().toISOString(),
-    });
+projectRouter.get(
+  '/:slugOrAsset',
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { slugOrAsset } = req.params;
+
+    const manifest = await Loaders.getManifest();
+    if (!manifest) {
+      return res.status(500).json({
+        error: 'Internal Server Error',
+        message: 'Could not load project manifest',
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    const project = manifest.projects.find((p: any) => p.slug === slugOrAsset);
+
+    if (project) {
+      const projectPath = path.join(
+        process.cwd(),
+        '..',
+        'apps',
+        project.directory
+      );
+      const entryPoint = path.join(projectPath, project.entryPoint);
+
+      try {
+        // make sure to apply the same-origin referrer policy
+        // this is needed for assets to be served correctly
+        let html = await fs.readFile(entryPoint, 'utf8');
+        const referrerRegex =
+          /<meta\s+name="referrer"\s+content="([^"]+)"\s*\/?>/i;
+        const match = html.match(referrerRegex);
+
+        if (match) {
+          if (match[1] !== 'same-origin') {
+            html = html.replace(
+              referrerRegex,
+              '<meta name="referrer" content="same-origin" />'
+            );
+          }
+        } else {
+          html = html.replace(
+            '<head>',
+            '<head><meta name="referrer" content="same-origin" />'
+          );
+        }
+
+        res.send(html);
+      } catch (error) {
+        res.status(404).json({
+          error: 'Not Found',
+          message: `Project '${slugOrAsset}' entry point not found.`,
+          slug: slugOrAsset,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    } else {
+      // it's an asset request
+      const referrer = req.get('Referrer');
+      if (!referrer) {
+        return next();
+      }
+
+      const referrerUrl = new URL(referrer);
+      const projectSlug = referrerUrl.pathname.split('/')[1];
+
+      if (!projectSlug) {
+        return next();
+      }
+
+      const refProject = manifest.projects.find(
+        (p: any) => p.slug === projectSlug
+      );
+      if (!refProject) {
+        return next();
+      }
+
+      const projectPath = path.join(
+        process.cwd(),
+        '..',
+        'apps',
+        refProject.directory
+      );
+      const assetPath = path.join(projectPath, slugOrAsset);
+
+      res.sendFile(assetPath, err => {
+        if (err) {
+          next();
+        }
+      });
+    }
   }
-
-  // Find hub project in manifest
-  const hubProject = manifest.projects.find((p: any) => p.slug === 'hub');
-  if (!hubProject) {
-    return res.status(404).json({
-      error: 'Not Found',
-      message: 'Hub project not found in manifest',
-      timestamp: new Date().toISOString(),
-    });
-  }
-
-  // Try to serve hub app from build directory
-  const buildDir = await findBuildDirectory(hubProject.directory);
-  if (buildDir) {
-    const entryFile = path.join(buildDir, hubProject.entryPoint);
-    return serveStaticFile(res, entryFile, hubProject.entryPoint);
-  }
-
-  return res.status(404).json({
-    error: 'Not Found',
-    message: 'Hub project build not found. Please run build command.',
-    timestamp: new Date().toISOString(),
-  });
-});
-
-// Dynamic project slug route with static file serving
-projectRouter.get('/:slug', async (req: Request, res: Response) => {
-  const { slug } = req.params;
-
-  // Validate slug format
-  if (!/^[a-z0-9-]+$/.test(slug)) {
-    return res.status(400).json({
-      error: 'Bad Request',
-      message:
-        'Project slug must contain only lowercase letters, numbers, and hyphens',
-      slug,
-      timestamp: new Date().toISOString(),
-    });
-  }
-
-  const manifest = await Loaders.getManifest();
-  if (!manifest) {
-    return res.status(500).json({
-      error: 'Internal Server Error',
-      message: 'Could not load project manifest',
-      timestamp: new Date().toISOString(),
-    });
-  }
-
-  // Find project in manifest
-  const project = manifest.projects.find((p: any) => p.slug === slug);
-  if (!project) {
-    return res.status(404).json({
-      error: 'Not Found',
-      message: `Project '${slug}' not found in manifest`,
-      slug,
-      timestamp: new Date().toISOString(),
-    });
-  }
-
-  // Try to serve project from build directory
-  const buildDir = await findBuildDirectory(project.directory);
-  if (buildDir) {
-    const entryFile = path.join(buildDir, project.entryPoint);
-    return serveStaticFile(res, entryFile, project.entryPoint);
-  }
-
-  return res.status(404).json({
-    error: 'Not Found',
-    message: `Project '${slug}' build not found. Please run build command for this project.`,
-    slug,
-    timestamp: new Date().toISOString(),
-  });
-});
-
-// Catch-all route for serving static assets within projects
-projectRouter.get('/:slug/*', async (req: Request, res: Response) => {
-  const { slug } = req.params;
-  const assetPath = req.params[0]; // Everything after /:slug/
-
-  // Validate slug format
-  if (!/^[a-z0-9-]+$/.test(slug)) {
-    return res.status(400).json({
-      error: 'Bad Request',
-      message:
-        'Project slug must contain only lowercase letters, numbers, and hyphens',
-      slug,
-      timestamp: new Date().toISOString(),
-    });
-  }
-
-  const manifest = await Loaders.getManifest();
-  if (!manifest) {
-    return res.status(500).json({
-      error: 'Internal Server Error',
-      message: 'Could not load project manifest',
-      timestamp: new Date().toISOString(),
-    });
-  }
-
-  // Find project in manifest
-  const project = manifest.projects.find((p: any) => p.slug === slug);
-  if (!project) {
-    return res.status(404).json({
-      error: 'Not Found',
-      message: `Project '${slug}' not found in manifest`,
-      slug,
-      timestamp: new Date().toISOString(),
-    });
-  }
-
-  // Try to serve asset from build directory
-  const buildDir = await findBuildDirectory(project.directory);
-  if (buildDir) {
-    const assetFile = path.join(buildDir, assetPath);
-    return serveStaticFile(res, assetFile, project.entryPoint);
-  }
-
-  return res.status(404).json({
-    error: 'Not Found',
-    message: `Project '${slug}' build not found. Please run build command for this project.`,
-    slug,
-    timestamp: new Date().toISOString(),
-  });
-});
+);
 
 export default projectRouter;

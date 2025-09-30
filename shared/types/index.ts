@@ -4,6 +4,7 @@ export interface ProjectManifest {
   directory: string;
   description?: string;
   entryPoint: string;
+  published?: boolean;
 }
 export interface Manifest {
   projects: ProjectManifest[];
