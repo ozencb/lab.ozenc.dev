@@ -68,8 +68,12 @@ const serveStaticFile = async (
   });
 };
 
+projectRouter.get('/', (_: Request, res: Response) => {
+  res.redirect('/hub');
+});
+
 // Hub app route (root route)
-projectRouter.get('/', async (_req: Request, res: Response) => {
+projectRouter.get('/hub', async (_req: Request, res: Response) => {
   const manifest = await Loaders.getManifest();
   if (!manifest) {
     return res.status(500).json({
