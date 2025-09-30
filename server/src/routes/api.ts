@@ -25,8 +25,6 @@ const apiRouter = (isDevelopment: boolean): Router => {
         });
       }
 
-      console.log({ isDevelopment });
-
       const projects = manifest.projects
         .map((project: any) => {
           return {
