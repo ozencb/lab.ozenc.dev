@@ -1,3 +1,3 @@
 # lab.ozenc.dev
 
-A PNPM monorepo hosting platform for experimental web applications with a central manifest system, backend routing, and individual project serving.
+Monorepo for web stuff
