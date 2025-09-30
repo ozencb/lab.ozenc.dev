@@ -1,70 +1,46 @@
 {
   "name": "lab.ozenc.dev",
   "version": "1.0.0",
-  "description": "A PNPM monorepo hosting platform for experimental web applications with a central manifest system, backend routing, and individual project serving.",
+  "description": "Various web experiments, in a PNPM monorepo",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ozenc/lab.ozenc.dev.git"
+  },
+  "author": "Ozenc Bilgili",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node scripts/dev.js",
+    "dev": "pnpm -r --parallel dev",
     "dev:server": "pnpm --filter @lab.ozenc.dev/server dev",
     "dev:debug": "pnpm --filter @lab.ozenc.dev/server dev:debug",
-    "build": "node scripts/build-all.js",
-    "validate": "node scripts/validate-manifest.js",
+    "build": "pnpm -r --parallel build",
+    "build:watch": "pnpm -r --parallel build --watch",
+    "start": "pnpm --filter @lab.ozenc.dev/server start",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "type-check": "tsc --noEmit",
-    "clean": "pnpm -r run clean && rm -rf node_modules/.cache",
-    "install:all": "pnpm install",
-    "test": "pnpm -r run test"
+    "clean": "pnpm -r run clean && rm -rf node_modules/.cache"
   },
   "workspaces": [
     "apps/*",
     "server",
-    "shared",
-    "scripts"
+    "shared"
   ],
   "devDependencies": {
-    "@types/node": "^20.10.5",
-    "@typescript-eslint/eslint-plugin": "^6.16.0",
-    "@typescript-eslint/parser": "^6.16.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-jsx-a11y": "^6.8.0",
-    "prettier": "^3.1.1",
-    "typescript": "^5.3.3",
-    "concurrently": "^8.2.2",
-    "cross-env": "^7.0.3"
+    "prettier": "^3.1.1"
   },
-  "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "compression": "^1.7.4",
-    "helmet": "^7.1.0"
-  },
+  "dependencies": {},
   "engines": {
-    "node": ">=18.0.0",
+    "node": ">=22.0.0",
     "pnpm": ">=8.0.0"
   },
-  "packageManager": "pnpm@8.15.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ozenc/lab.ozenc.dev.git"
-  },
-  "author": "Ozen Celik",
-  "license": "MIT",
-  "keywords": [
-    "monorepo",
-    "experimental",
-    "web-applications",
-    "react",
-    "nextjs",
-    "typescript",
-    "pnpm",
-    "manifest",
-    "hosting-platform"
-  ]
-} 
+  "packageManager": "pnpm@8.15.0"
+}

@@ -18,11 +18,11 @@
     },
     {
       "slug": "project-2",
-      "name": "Project Two", 
+      "name": "Project Two",
       "directory": "project-2",
       "description": "Example experimental project - modern web application with build tools",
       "version": "0.1.0",
       "entryPoint": "index.html"
     }
   ]
-} 
+}

@@ -26,18 +26,10 @@
     "baseUrl": ".",
     "paths": {
       "@shared/*": ["shared/*"],
-      "@server/*": ["server/*"],
-      "@scripts/*": ["scripts/*"]
+      "@server/*": ["server/*"]
     }
   },
-  "include": [
-    "shared/**/*",
-    "server/**/*", 
-    "scripts/**/*",
-    "apps/**/*",
-    "*.ts",
-    "*.tsx"
-  ],
+  "include": ["shared/**/*", "server/**/*", "apps/**/*", "*.ts", "*.tsx"],
   "exclude": [
     "node_modules",
     "**/node_modules",
@@ -54,9 +46,6 @@
     },
     {
       "path": "./shared"
-    },
-    {
-      "path": "./scripts"
     }
   ]
-} 
+}

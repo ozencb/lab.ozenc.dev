@@ -1,12 +1,6 @@
 packages:
-  # Main applications
   - 'apps/*'
-  
-  # Backend server
   - 'server'
-  
-  # Shared utilities and types
   - 'shared'
-  
-  # Build and deployment scripts
-  - 'scripts' 
+
+linkWorkspacePackages: true
