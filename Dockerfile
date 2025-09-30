@@ -1,4 +1,3 @@
-
 # Use the official Node.js 22 image.
 FROM node:22-slim
 
@@ -15,8 +14,8 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY server/package.json server/
 COPY shared/package.json shared/
 
-# Install dependencies
-RUN pnpm install --prod
+# Install all dependencies (including devDependencies for building)
+RUN pnpm install
 
 # Copy the rest of the monorepo source code
 COPY . .
