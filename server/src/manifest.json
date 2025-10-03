@@ -1,0 +1,22 @@
+{
+  "projects": [
+    {
+      "slug": "hub",
+      "name": "Lab Hub",
+      "directory": "hub",
+      "description": "Main React application serving as the central hub for all experimental projects",
+      "entryPoint": "index.html",
+      "published": false
+    },
+
+    {
+      "slug": "glass",
+      "name": "Glass",
+      "directory": "glass",
+      "description": "A React component that mimicks the glass effect on iOS 26",
+      "entryPoint": "index.html",
+      "buildDirectory": "dist",
+      "published": true
+    }
+  ]
+}

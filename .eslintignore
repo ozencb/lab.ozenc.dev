@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+out/
+**/dist/
+**/build/
+**/out/
+
+# Generated files
+*.min.js
+*.min.css
+*.bundle.js
+
+# Framework specific
+.next/
+.nuxt/
+.output/
+.vite/
+.turbo/
+
+# Package manager
+.pnpm-debug.log*
+.yarn/
+
+# TypeScript
+*.tsbuildinfo
+
+# Environment files
+.env*
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+*.tmp
+*.temp 
