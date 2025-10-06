@@ -40,9 +40,14 @@ img {
 
 @font-face {
   font-family: 'CourierPrime';
-  src:
-    url('assets/CourierPrime-Regular.ttf') format('truetype'),
-    url('assets/CourierPrime-Bold.ttf') format('truetype');
+  src: url('assets/CourierPrime-Regular.ttf') format('truetype');
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: 'CourierPrime';
+  src: url('assets/CourierPrime-Bold.ttf') format('truetype');
+  font-weight: bold;
 }
 
 html {
@@ -60,6 +65,7 @@ body {
   font-family: 'Courier Prime', 'Courier', monospace;
   gap: 2rem;
   font-size: 1.2em;
+  font-weight: normal;
 }
 
 .main {
@@ -75,7 +81,6 @@ body {
 
 .title {
   font-size: 1.5em;
-  font-weight: bold;
 }
 
 .projects {
@@ -107,11 +112,11 @@ body {
 
 .project-title {
   margin-bottom: 1rem;
-  font-weight: bold;
 }
 
 .project-description {
   font-size: 1em;
+  font-weight: lighter;
 }
 
 footer {
