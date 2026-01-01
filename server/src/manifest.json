@@ -17,6 +17,15 @@
       "entryPoint": "index.html",
       "buildDirectory": "dist",
       "published": true
+    },
+    {
+      "slug": "fireworks",
+      "name": "Fireworks",
+      "directory": "fireworks",
+      "description": "ASCII Fireworks using ASCII Engine",
+      "entryPoint": "index.html",
+      "buildDirectory": "dist",
+      "published": true
     }
   ]
 }

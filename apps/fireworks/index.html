@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ASCII Fireworks</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: radial-gradient(circle at 50% 35%, #1b1542 0%, #05010a 70%);
+        color: #ffffff;
+        font-family: 'Fira Code', 'Courier New', monospace;
+        overflow: hidden;
+      }
+
+      #fireworks {
+        height: 100vh;
+        width: 100vw;
+        padding: 1.5rem;
+        box-sizing: border-box;
+        filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.25));
+      }
+
+      #fireworks span {
+        letter-spacing: 0.08em;
+        text-shadow: 0 0 6px rgba(255, 255, 255, 0.18);
+      }
+
+      @media (max-width: 768px) {
+        #fireworks {
+          padding: 0.5rem;
+        }
+
+        #fireworks span {
+          letter-spacing: 0.04em;
+        }
+      }
+    </style>
+    <script
+      src="https://ozencb.github.io/ascii-engine/latest/ascii-engine.js"
+      defer
+    ></script>
+  </head>
+  <body>
+    <div id="fireworks" aria-label="ASCII fireworks animation"></div>
+    <script>
+      const randRange = (min, max) => Math.random() * (max - min) + min;
+      const clamp = (val, min, max) => Math.min(max, Math.max(min, val));
+      const colorChoices = [
+        '#ff5f6d',
+        '#ffc15e',
+        '#5bff89',
+        '#61dafb',
+        '#b792ff',
+        '#ff71ff',
+        '#ff9d5c',
+        '#ffd65c',
+        '#4ef5ff',
+        '#ff5ccb',
+      ];
+      const charScale = [
+        '@',
+        '#',
+        '%',
+        '&',
+        '*',
+        '+',
+        '=',
+        '~',
+        '-',
+        ':',
+        '.',
+        '`',
+      ];
+
+      const state = {
+        rockets: [],
+        particles: [],
+        buffer: new Map(),
+        lastFrame: -1,
+        spawnTimer: 0,
+        nextSpawn: randRange(0.15, 0.55),
+      };
+
+      const config = {
+        gravity: 18,
+        drag: 0.985,
+        rocketSpeed: [24, 32],
+        rocketAcceleration: [16, 24],
+        rocketTrailInterval: 0.025,
+        rocketSpawnBounds: [0.18, 0.82],
+        rocketTargetRange: [0.2, 0.48],
+        explosionParticles: [55, 120],
+        explosionSpeed: [7, 20],
+        explosionLife: [1.1, 2.2],
+        trailLife: [0.22, 0.38],
+      };
+
+      const jitterColor = hex => {
+        const clean = hex.replace(/[^0-9a-fA-F]/g, '');
+        const num = parseInt(clean.length === 6 ? clean : clean.repeat(2), 16);
+        let r = (num >> 16) & 255;
+        let g = (num >> 8) & 255;
+        let b = num & 255;
+        const factor = randRange(0.82, 1.18);
+        r = clamp(Math.floor(r * factor + randRange(-12, 12)), 0, 255);
+        g = clamp(Math.floor(g * factor + randRange(-12, 12)), 0, 255);
+        b = clamp(Math.floor(b * factor + randRange(-12, 12)), 0, 255);
+        return `rgb(${r}, ${g}, ${b})`;
+      };
+
+      const buildSpan = (char, color, opacity) => {
+        const safeOpacity = clamp(opacity, 0.05, 1).toFixed(3);
+        return `<span style="display:inline-block;width:1ch;color:${color};opacity:${safeOpacity};">${char}</span>`;
+      };
+
+      const writeCell = (cols, col, row, html, intensity) => {
+        const key = row * cols + col;
+        const existing = state.buffer.get(key);
+        if (!existing || intensity > existing.intensity) {
+          state.buffer.set(key, { html, intensity });
+        }
+      };
+
+      const spawnRocket = ctx => {
+        const cols = ctx.cols;
+        const rows = ctx.rows;
+        const x = randRange(
+          cols * config.rocketSpawnBounds[0],
+          cols * config.rocketSpawnBounds[1]
+        );
+        const targetRow = randRange(
+          rows * config.rocketTargetRange[0],
+          rows * config.rocketTargetRange[1]
+        );
+        const color =
+          colorChoices[Math.floor(Math.random() * colorChoices.length)];
+        const strength = randRange(0.65, 1.35);
+        state.rockets.push({
+          x,
+          y: rows + 2,
+          vy: -randRange(...config.rocketSpeed),
+          acceleration: randRange(...config.rocketAcceleration),
+          targetRow,
+          color,
+          strength,
+          lastTrail: 0,
+        });
+      };
+
+      const explode = rocket => {
+        const count = Math.floor(
+          randRange(...config.explosionParticles) * rocket.strength
+        );
+        const baseLife = randRange(...config.explosionLife) * rocket.strength;
+        const baseSpeed = randRange(...config.explosionSpeed) * rocket.strength;
+
+        for (let i = 0; i < count; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = randRange(baseSpeed * 0.35, baseSpeed * 1.05);
+          state.particles.push({
+            x: rocket.x + randRange(-0.15, 0.15),
+            y: rocket.y + randRange(-0.15, 0.15),
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            lifetime: randRange(baseLife * 0.7, baseLife * 1.3),
+            age: 0,
+            color: jitterColor(rocket.color),
+            brightness: randRange(0.85, 1.35),
+            sparkle: Math.random() > 0.8,
+          });
+        }
+
+        state.particles.push({
+          x: rocket.x,
+          y: rocket.y,
+          vx: 0,
+          vy: 0,
+          lifetime: 0.28,
+          age: 0,
+          color: '#ffffff',
+          brightness: 1.6,
+          sparkle: false,
+        });
+      };
+
+      const updateState = ctx => {
+        const dt = Math.min(ctx.deltaTime || 0.016, 0.05);
+        const rowCount = ctx.rows;
+        const colCount = ctx.cols;
+
+        state.spawnTimer += dt;
+        if (state.spawnTimer >= state.nextSpawn) {
+          spawnRocket(ctx);
+          state.spawnTimer = 0;
+          state.nextSpawn = randRange(0.18, 0.6);
+        }
+
+        state.buffer.clear();
+
+        for (let i = state.rockets.length - 1; i >= 0; i--) {
+          const rocket = state.rockets[i];
+          rocket.y += rocket.vy * dt;
+          rocket.vy += rocket.acceleration * dt;
+          rocket.lastTrail += dt;
+
+          if (rocket.lastTrail >= config.rocketTrailInterval) {
+            rocket.lastTrail = 0;
+            state.particles.push({
+              x: rocket.x + randRange(-0.35, 0.35),
+              y: rocket.y + randRange(0.6, 1.1),
+              vx: randRange(-1.5, 1.5),
+              vy: randRange(0.4, 1.1),
+              lifetime: randRange(...config.trailLife),
+              age: 0,
+              color: rocket.color,
+              brightness: randRange(0.4, 0.8),
+              sparkle: true,
+            });
+          }
+
+          const row = Math.round(rocket.y);
+          const col = Math.round(rocket.x);
+          const shouldExplode =
+            row <= rocket.targetRow ||
+            rocket.vy >= -2 ||
+            row < 2 ||
+            Math.random() > 0.998;
+
+          if (shouldExplode) {
+            explode(rocket);
+            state.rockets.splice(i, 1);
+            continue;
+          }
+
+          if (row >= 0 && row < rowCount && col >= 0 && col < colCount) {
+            const html = buildSpan('│', rocket.color, 0.95);
+            writeCell(colCount, col, row, html, 1.25);
+          }
+        }
+
+        for (let i = state.particles.length - 1; i >= 0; i--) {
+          const particle = state.particles[i];
+          particle.age += dt;
+
+          if (particle.age >= particle.lifetime) {
+            state.particles.splice(i, 1);
+            continue;
+          }
+
+          const dragFactor = Math.pow(config.drag, dt * 60);
+          particle.vx *= dragFactor;
+          particle.vy *= dragFactor;
+          particle.vy += config.gravity * dt * (particle.sparkle ? 0.55 : 1);
+
+          particle.x += particle.vx * dt;
+          particle.y += particle.vy * dt;
+
+          const col = Math.round(particle.x);
+          const row = Math.round(particle.y);
+
+          if (col < 0 || col >= colCount || row < 0 || row >= rowCount) {
+            continue;
+          }
+
+          const lifeRatio = clamp(1 - particle.age / particle.lifetime, 0, 1);
+          const charIndex = Math.min(
+            charScale.length - 1,
+            Math.floor((1 - lifeRatio) * (charScale.length - 1))
+          );
+          const character = charScale[charIndex];
+          const opacity =
+            Math.pow(lifeRatio, particle.sparkle ? 1 : 0.75) *
+            particle.brightness;
+          const html = buildSpan(character, particle.color, opacity);
+          writeCell(colCount, col, row, html, lifeRatio * particle.brightness);
+        }
+
+        if (state.particles.length > 1500) {
+          state.particles.splice(0, state.particles.length - 1500);
+        }
+      };
+
+      window.addEventListener('DOMContentLoaded', () => {
+        if (!window.AsciiEngine) {
+          console.error('ASCII Engine failed to load.');
+          return;
+        }
+
+        const { render, Resolution } = window.AsciiEngine;
+        const target = document.getElementById('fireworks');
+
+        render(
+          target,
+          (coords, context) => {
+            if (context.frame !== state.lastFrame) {
+              updateState(context);
+              state.lastFrame = context.frame;
+            }
+
+            const key = coords.y * context.cols + coords.x;
+            const cell = state.buffer.get(key);
+            return cell ? cell.html : null;
+          },
+          { resolution: Resolution.Maximum }
+        );
+      });
+    </script>
+  </body>
+</html>
