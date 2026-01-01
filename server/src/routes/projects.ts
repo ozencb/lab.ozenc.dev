@@ -1,10 +1,72 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import path from 'path';
 import fs from 'fs/promises';
+import type {
+  ProjectManifest,
+  HomepageIcon,
+} from '@lab.ozenc.dev/shared/types';
 import { Loaders } from '../loaders';
 import { findAssetPath } from '../utils';
+import {
+  HOMEPAGE_LOGO_DEFAULT_POSITION,
+  HOMEPAGE_LOGO_DISABLED,
+  HOMEPAGE_LOGO_MARKUP,
+  HOMEPAGE_LOGO_POSITION_PLACEHOLDER,
+  HOMEPAGE_LOGO_STYLE,
+  HOMEPAGE_SLUG,
+} from '../constants';
+import { HOMEPAGE_LOGO_ALLOWED_POSITIONS } from '@lab.ozenc.dev/shared';
 
 const projectRouter: Router = Router();
+
+const selectedHomepageIconPosition = (
+  project: ProjectManifest
+): HomepageIcon => {
+  if (!project.homepageIcon) {
+    return HOMEPAGE_LOGO_DEFAULT_POSITION;
+  }
+
+  if (project.homepageIcon === HOMEPAGE_LOGO_DISABLED) {
+    return project.homepageIcon;
+  }
+
+  if (HOMEPAGE_LOGO_ALLOWED_POSITIONS.includes(project.homepageIcon)) {
+    return project.homepageIcon;
+  }
+
+  return HOMEPAGE_LOGO_DEFAULT_POSITION;
+};
+
+const injectHomepageLogo = (html: string, project: ProjectManifest): string => {
+  const position = selectedHomepageIconPosition(project);
+
+  if (position === HOMEPAGE_LOGO_DISABLED) {
+    return html;
+  }
+
+  if (html.includes('lab-homepage-logo-wrapper')) {
+    return html;
+  }
+
+  if (/<head[^>]*>/i.test(html) && !html.includes('lab-homepage-logo-style')) {
+    html = html.replace(/<head([^>]*)>/i, `<head$1>${HOMEPAGE_LOGO_STYLE}`);
+  }
+
+  if (/<body[^>]*>/i.test(html)) {
+    const logoMarkup = HOMEPAGE_LOGO_MARKUP.replace(
+      HOMEPAGE_LOGO_POSITION_PLACEHOLDER,
+      position
+    );
+    return html.replace(/<body([^>]*)>/i, `<body$1>${logoMarkup}`);
+  }
+
+  const fallbackMarkup = HOMEPAGE_LOGO_MARKUP.replace(
+    HOMEPAGE_LOGO_POSITION_PLACEHOLDER,
+    position
+  );
+
+  return `${fallbackMarkup}${html}`;
+};
 
 const assetHandler = async (
   asset: string,
@@ -90,7 +152,9 @@ projectRouter.get(
       });
     }
 
-    const project = manifest.projects.find((p: any) => p.slug === slugOrAsset);
+    const project = manifest.projects.find(
+      (p: ProjectManifest) => p.slug === slugOrAsset
+    );
 
     if (project) {
       const projectPath = path.join(
@@ -126,6 +190,10 @@ projectRouter.get(
             '<head>',
             '<head><meta name="referrer" content="same-origin" />'
           );
+        }
+
+        if (project.slug !== HOMEPAGE_SLUG) {
+          html = injectHomepageLogo(html, project);
         }
 
         res.send(html);

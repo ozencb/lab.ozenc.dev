@@ -16,7 +16,8 @@
       "description": "A React component that mimicks the glass effect on iOS 26",
       "entryPoint": "index.html",
       "buildDirectory": "dist",
-      "published": true
+      "published": true,
+      "homepageIcon": "top-left"
     },
     {
       "slug": "fireworks",

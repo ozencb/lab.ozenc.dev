@@ -1,3 +1,9 @@
+import { HOMEPAGE_LOGO_ALLOWED_POSITIONS } from '../constants';
+
+export type HomepageIcon =
+  | (typeof HOMEPAGE_LOGO_ALLOWED_POSITIONS)[number]
+  | 'disabled';
+
 export interface ProjectManifest {
   slug: string;
   name: string;
@@ -6,6 +12,7 @@ export interface ProjectManifest {
   entryPoint: string;
   buildDirectory?: string;
   published?: boolean;
+  homepageIcon?: HomepageIcon;
 }
 
 export interface Manifest {

@@ -57,6 +57,21 @@ export const validateProjectManifest = (
     errors.push('published must be a boolean if provided');
   }
 
+  if (
+    project.homepageIcon !== undefined &&
+    ![
+      'top-left',
+      'top-right',
+      'bottom-left',
+      'bottom-right',
+      'disabled',
+    ].includes(project.homepageIcon as string)
+  ) {
+    errors.push(
+      "homepageIcon must be one of 'top-left', 'top-right', 'bottom-left', 'bottom-right', or 'disabled'"
+    );
+  }
+
   return {
     isValid: errors.length === 0,
     errors,

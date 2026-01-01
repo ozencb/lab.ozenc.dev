@@ -8,15 +8,8 @@
     "composite": true,
     "incremental": true,
     "noEmit": false,
-    "allowImportingTsExtensions": false
+    "allowImportingTsExtensions": false,
   },
-  "include": [
-    "types/**/*",
-    "utils/**/*",
-    "*.ts"
-  ],
-  "exclude": [
-    "dist",
-    "node_modules"
-  ]
-} 
+  "include": ["types/**/*", "utils/**/*", "constants/**/*", "*.ts"],
+  "exclude": ["dist", "node_modules"],
+}
