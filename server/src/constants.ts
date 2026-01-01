@@ -1,11 +1,3 @@
-import {
-  HOMEPAGE_LOGO_DEFAULT_POSITION,
-  HOMEPAGE_LOGO_DISABLED,
-  HOMEPAGE_LOGO_MARKUP,
-  HOMEPAGE_LOGO_POSITION_PLACEHOLDER,
-  HOMEPAGE_LOGO_STYLE,
-} from './html/homepage-logo';
-
 export const HOMEPAGE_SLUG = 'hub';
 
 export {
@@ -14,4 +6,4 @@ export {
   HOMEPAGE_LOGO_MARKUP,
   HOMEPAGE_LOGO_POSITION_PLACEHOLDER,
   HOMEPAGE_LOGO_STYLE,
-};
+} from './html/homepage-logo';

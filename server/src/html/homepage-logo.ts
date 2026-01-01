@@ -1,5 +1,4 @@
 import { HOMEPAGE_LOGO_ALLOWED_POSITIONS } from '@lab.ozenc.dev/shared';
-import { HOMEPAGE_SLUG } from '../constants';
 
 const FLASK_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" height="32" width="32">
   <g>
@@ -112,7 +111,7 @@ export const HOMEPAGE_LOGO_MARKUP = `
   <div class="lab-homepage-logo-wrapper-inner">
     <a
       class="lab-homepage-logo"
-      href="/${HOMEPAGE_SLUG}"
+      href="/hub"
       aria-label="Go to lab.ozenc.dev"
     >
       ${FLASK_ICON_SVG}

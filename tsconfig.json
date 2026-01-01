@@ -26,8 +26,8 @@
     "baseUrl": ".",
     "paths": {
       "@shared/*": ["shared/*"],
-      "@server/*": ["server/*"]
-    }
+      "@server/*": ["server/*"],
+    },
   },
   "include": ["shared/**/*", "server/**/*", "apps/**/*", "*.ts", "*.tsx"],
   "exclude": [
@@ -35,17 +35,14 @@
     "**/node_modules",
     "**/dist",
     "**/build",
-    "**/.next"
+    "**/.next",
   ],
   "references": [
     {
-      "path": "./apps/hub"
+      "path": "./server",
     },
     {
-      "path": "./server"
+      "path": "./shared",
     },
-    {
-      "path": "./shared"
-    }
-  ]
+  ],
 }
