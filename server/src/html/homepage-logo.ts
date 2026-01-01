@@ -1,10 +1,7 @@
 import { HOMEPAGE_LOGO_ALLOWED_POSITIONS } from '@lab.ozenc.dev/shared';
+import { HOMEPAGE_SLUG } from '../constants';
 
 const FLASK_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" height="32" width="32">
-  <desc>
-    School Science Test Flask Streamline Icon: https://streamlinehq.com
-  </desc>
-  <title>school-science-test-flask</title>
   <g>
     <path d="M27.425 18.28h1.53v7.62h-1.53Z" fill="#FFFFFF" stroke-width="1"></path>
     <path d="M25.905 25.9h1.52v3.05h-1.52Z" fill="#FFFFFF" stroke-width="1"></path>
@@ -115,7 +112,7 @@ export const HOMEPAGE_LOGO_MARKUP = `
   <div class="lab-homepage-logo-wrapper-inner">
     <a
       class="lab-homepage-logo"
-      href="/"
+      href="/${HOMEPAGE_SLUG}"
       aria-label="Go to lab.ozenc.dev"
     >
       ${FLASK_ICON_SVG}
