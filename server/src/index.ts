@@ -25,7 +25,12 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'wasm-unsafe-eval'"],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "'wasm-unsafe-eval'",
+          'https://ozencb.github.io',
+        ],
         imgSrc: ["'self'", 'data:', 'https:'],
         connectSrc: ["'self'", 'blob:'],
       },
