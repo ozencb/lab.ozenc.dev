@@ -172,7 +172,6 @@ body::before {
 .marquee {
   display: flex;
   width: fit-content;
-  animation: scroll 40s linear infinite;
 }
 
 .marquee-content {
@@ -188,15 +187,6 @@ body::before {
 
 .marquee.reverse {
   animation-direction: reverse;
-}
-
-@keyframes scroll {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
 }
 
 .project-card {

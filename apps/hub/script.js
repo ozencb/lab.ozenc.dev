@@ -1,105 +1,195 @@
-fetch('/api/projects')
-  .then(response => {
+const accentColors = [
+  'var(--color-accent-yellow)',
+  'var(--color-accent-green)',
+  'var(--color-accent-pink)',
+  'var(--color-accent-purple)',
+  'var(--color-accent-cyan)',
+  'var(--color-accent-orange)',
+];
+let lastColorIndex = -1;
+
+const getRandomColor = () => {
+  let colorIndex;
+  do {
+    colorIndex = Math.floor(Math.random() * accentColors.length);
+  } while (accentColors.length > 1 && colorIndex === lastColorIndex);
+  lastColorIndex = colorIndex;
+  return accentColors[colorIndex];
+};
+
+const getStyledProjects = projects =>
+  projects.map(project => ({
+    ...project,
+    color: getRandomColor(),
+    rotation: (Math.random() - 0.5) * 1.2,
+  }));
+
+const createProjectCards = projectsArray => {
+  const fragment = document.createDocumentFragment();
+  projectsArray.forEach(project => {
+    const div = document.createElement('div');
+    div.classList.add('project-card');
+
+    div.style.backgroundColor = project.color;
+    div.style.boxShadow = '10px 10px 0 var(--color-bg-black)';
+    div.style.transform = `rotate(${project.rotation}deg)`;
+
+    const a = document.createElement('a');
+    a.classList.add('project-link');
+
+    const titleEl = document.createElement('h2');
+    titleEl.classList.add('project-title');
+    titleEl.textContent = project.name;
+
+    const descriptionEl = document.createElement('p');
+    descriptionEl.classList.add('project-description');
+    descriptionEl.textContent = project.description;
+
+    a.appendChild(titleEl);
+    a.appendChild(descriptionEl);
+
+    a.href = project.url;
+    div.appendChild(a);
+    fragment.appendChild(div);
+  });
+  return fragment;
+};
+
+const createMarquee = (projects, reverse = false) => {
+  const marqueeWrapper = document.createElement('div');
+  marqueeWrapper.classList.add('marquee-wrapper');
+
+  const marquee = document.createElement('div');
+  marquee.classList.add('marquee');
+  if (reverse) {
+    marquee.classList.add('reverse');
+  }
+
+  const marqueeContent = document.createElement('div');
+  marqueeContent.classList.add('marquee-content');
+
+  const styledProjects = getStyledProjects(projects);
+  marqueeContent.appendChild(createProjectCards(styledProjects));
+
+  let contentWidth = 0;
+  let animationId;
+
+  const calculateWidth = () => {
+    // Temporarily append to DOM to calculate width
+    const tempWrapper = document.createElement('div');
+    tempWrapper.style.position = 'absolute';
+    tempWrapper.style.left = '-9999px'; // Hide it off-screen
+    const tempMarqueeContent = marqueeContent.cloneNode(true);
+    tempWrapper.appendChild(tempMarqueeContent);
+    document.body.appendChild(tempWrapper);
+    contentWidth = tempMarqueeContent.offsetWidth;
+    document.body.removeChild(tempWrapper);
+  };
+
+  calculateWidth();
+
+  if (contentWidth === 0) {
+    return {
+      element: marqueeWrapper,
+      stop: () => {},
+    };
+  }
+
+  marquee.appendChild(marqueeContent);
+  const cloneCount = Math.ceil(window.innerWidth / contentWidth) + 1;
+
+  for (let i = 0; i < cloneCount; i++) {
+    const clone = marqueeContent.cloneNode(true);
+    marquee.appendChild(clone);
+  }
+
+  marqueeWrapper.appendChild(marquee);
+
+  const animateMarquee = () => {
+    let position;
+    const speed = 0.5;
+
+    function step() {
+      if (reverse) {
+        // scrolls left
+        position -= speed;
+        if (position <= -contentWidth) {
+          position = 0;
+        }
+      } else {
+        // scrolls right
+        position += speed;
+        if (position >= 0) {
+          position = -contentWidth;
+        }
+      }
+
+      marquee.style.transform = `translateX(${position}px)`;
+      animationId = requestAnimationFrame(step);
+    }
+
+    if (reverse) {
+      position = 0;
+    } else {
+      position = -contentWidth;
+    }
+
+    marquee.style.transform = `translateX(${position}px)`;
+    animationId = requestAnimationFrame(step);
+  };
+
+  animateMarquee();
+
+  // Return wrapper and a function to stop the animation
+  return {
+    element: marqueeWrapper,
+    stop: () => cancelAnimationFrame(animationId),
+  };
+};
+
+const setupMarquees = projects => {
+  const projectsList = document.getElementById('projects');
+  if (!projectsList) return;
+
+  // Clear any existing content
+  while (projectsList.firstChild) {
+    projectsList.removeChild(projectsList.firstChild);
+  }
+
+  const marquee1 = createMarquee(projects);
+  const marquee2 = createMarquee(projects, true);
+
+  projectsList.appendChild(marquee1.element);
+  projectsList.appendChild(marquee2.element);
+
+  return [marquee1.stop, marquee2.stop];
+};
+
+let stopFunctions = [];
+
+const init = async () => {
+  try {
+    const response = await fetch('/api/projects');
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    return response.json();
-  })
-  .then(({ projects }) => {
-    const projectsList = document.getElementById('projects');
-
-    const accentColors = [
-      'var(--color-accent-yellow)',
-      'var(--color-accent-green)',
-      'var(--color-accent-pink)',
-      'var(--color-accent-purple)',
-      'var(--color-accent-cyan)',
-      'var(--color-accent-orange)',
-    ];
-    let lastColorIndex = -1;
-
-    const getRandomColor = () => {
-      let colorIndex;
-      do {
-        colorIndex = Math.floor(Math.random() * accentColors.length);
-      } while (accentColors.length > 1 && colorIndex === lastColorIndex);
-      lastColorIndex = colorIndex;
-      return accentColors[colorIndex];
-    };
-
-    const getStyledProjects = () =>
-      projects.map(project => ({
-        ...project,
-        color: getRandomColor(),
-        rotation: (Math.random() - 0.5) * 1.2,
-      }));
-
-    const createProjectCards = projectsArray => {
-      const fragment = document.createDocumentFragment();
-      projectsArray.forEach(project => {
-        const div = document.createElement('div');
-        div.classList.add('project-card');
-
-        div.style.backgroundColor = project.color;
-        div.style.boxShadow = '10px 10px 0 var(--color-bg-black)';
-        div.style.transform = `rotate(${project.rotation}deg)`;
-
-        const a = document.createElement('a');
-        a.classList.add('project-link');
-
-        const titleEl = document.createElement('h2');
-        titleEl.classList.add('project-title');
-        titleEl.textContent = project.name;
-
-        const descriptionEl = document.createElement('p');
-        descriptionEl.classList.add('project-description');
-        descriptionEl.textContent = project.description;
-
-        a.appendChild(titleEl);
-        a.appendChild(descriptionEl);
-
-        a.href = project.url;
-        div.appendChild(a);
-        fragment.appendChild(div);
-      });
-      return fragment;
-    };
-
-    const createMarqueeContent = () => {
-      const marqueeContent = document.createElement('div');
-      marqueeContent.classList.add('marquee-content');
-      const projectCards = createProjectCards(getStyledProjects());
-      marqueeContent.appendChild(projectCards);
-
-      return marqueeContent;
-    };
-
-    const createMarquee = (reverse = false) => {
-      const marqueeWrapper = document.createElement('div');
-      marqueeWrapper.classList.add('marquee-wrapper');
-
-      const marquee = document.createElement('div');
-      marquee.classList.add('marquee');
-      if (reverse) {
-        marquee.classList.add('reverse');
-      }
-
-      marquee.appendChild(createMarqueeContent());
-      marquee.appendChild(createMarqueeContent());
-      marquee.appendChild(createMarqueeContent());
-
-      marqueeWrapper.appendChild(marquee);
-      return marqueeWrapper;
-    };
-
-    projectsList.appendChild(createMarquee());
-    projectsList.appendChild(createMarquee(true));
-  })
-  .catch(error => {
+    const { projects } = await response.json();
+    stopFunctions = setupMarquees(projects);
+  } catch (error) {
     console.error('Failed to load projects:', error);
     const projectsList = document.getElementById('projects');
     if (projectsList) {
       projectsList.innerHTML =
         '<p style="text-align: center; padding: 2rem;">Failed to load projects. Please try again later.</p>';
     }
-  });
+  }
+};
+
+let resizeTimer;
+window.addEventListener('resize', () => {
+  stopFunctions.forEach(stop => stop());
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(init, 250); // Debounce resize event
+});
+
+init();
