@@ -7,6 +7,7 @@ const accentColors = [
   'var(--color-accent-orange)',
 ];
 let lastColorIndex = -1;
+let isMobile = window.innerWidth <= 768;
 
 const getRandomColor = () => {
   let colorIndex;
@@ -29,7 +30,7 @@ const getStyledProjects = projects =>
   projects.map(project => ({
     ...project,
     color: getRandomColor(),
-    rotation: (Math.random() - 0.5) * 1.2,
+    rotation: isMobile ? 0 : (Math.random() - 0.5) * 1.2,
   }));
 
 const createProjectCards = projectsArray => {
@@ -39,8 +40,11 @@ const createProjectCards = projectsArray => {
     div.classList.add('project-card');
 
     div.style.backgroundColor = project.color;
-    div.style.boxShadow = '10px 10px 0 var(--color-bg-black)';
-    div.style.transform = `rotate(${project.rotation}deg)`;
+
+    if (!isMobile) {
+      div.style.boxShadow = '10px 10px 0 var(--color-bg-black)';
+      div.style.transform = `rotate(${project.rotation}deg)`;
+    }
 
     const a = document.createElement('a');
     a.classList.add('project-link');
@@ -63,7 +67,7 @@ const createProjectCards = projectsArray => {
   return fragment;
 };
 
-const createMarquee = (projects, reverse = false, isMobile = false) => {
+const createMarquee = (projects, reverse = false) => {
   const marqueeWrapper = document.createElement('div');
   marqueeWrapper.classList.add('marquee-wrapper');
 
@@ -76,11 +80,15 @@ const createMarquee = (projects, reverse = false, isMobile = false) => {
   const marqueeContent = document.createElement('div');
   marqueeContent.classList.add('marquee-content');
 
-  const styledProjects = getStyledProjects(projects);
-  marqueeContent.appendChild(createProjectCards(styledProjects));
+  marqueeContent.appendChild(createProjectCards(getStyledProjects(projects)));
 
   if (isMobile) {
     marquee.appendChild(marqueeContent);
+    const clone = marqueeContent.cloneNode(true);
+    clone.innerHTML = '';
+    clone.appendChild(createProjectCards(getStyledProjects(projects)));
+
+    marquee.appendChild(clone);
     marqueeWrapper.appendChild(marquee);
     return {
       element: marqueeWrapper,
@@ -170,7 +178,6 @@ const createMarquee = (projects, reverse = false, isMobile = false) => {
 
 let projectsData = [];
 let stopFunctions = [];
-let isMobile = window.innerWidth <= 768;
 
 const setupMarquees = projects => {
   stopFunctions.forEach(stop => stop());
@@ -185,7 +192,7 @@ const setupMarquees = projects => {
 
   if (isMobile) {
     const shuffledProjects = shuffleArray([...projects]);
-    const marquee = createMarquee(shuffledProjects, false, true);
+    const marquee = createMarquee(shuffledProjects, false);
     projectsList.appendChild(marquee.element);
     stopFunctions.push(marquee.stop);
   } else {
@@ -239,28 +246,46 @@ window.addEventListener('resize', () => {
 
 init();
 
-let isDragging = false;
-let startY;
-let scrollTop;
-
 const projectsContainer = document.getElementById('projects');
 
-projectsContainer.addEventListener('touchstart', e => {
-  isDragging = true;
-  startY = e.touches[0].pageY - projectsContainer.offsetTop;
-  scrollTop = projectsContainer.scrollTop;
-  projectsContainer.style.cursor = 'grabbing';
-});
+if (isMobile) {
+  let isDragging = false;
+  let startX;
+  let scrollLeft;
 
-projectsContainer.addEventListener('touchend', () => {
-  isDragging = false;
-  projectsContainer.style.cursor = 'grab';
-});
+  projectsContainer.addEventListener('touchstart', e => {
+    isDragging = true;
+    startX = e.touches[0].pageX - projectsContainer.offsetLeft;
+    scrollLeft = projectsContainer.scrollLeft;
+    projectsContainer.style.cursor = 'grabbing';
+  });
 
-projectsContainer.addEventListener('touchmove', e => {
-  if (!isDragging) return;
-  e.preventDefault();
-  const y = e.touches[0].pageY - projectsContainer.offsetTop;
-  const walk = (y - startY) * 2; // Multiplier for faster scrolling
-  projectsContainer.scrollTop = scrollTop - walk;
-});
+  projectsContainer.addEventListener('touchend', () => {
+    isDragging = false;
+    projectsContainer.style.cursor = 'grab';
+  });
+
+  projectsContainer.addEventListener('touchmove', e => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const x = e.touches[0].pageX - projectsContainer.offsetLeft;
+    const walk = (x - startX) * 2; // Multiplier for faster scrolling
+    projectsContainer.scrollLeft = scrollLeft - walk;
+  });
+
+  let scrolling = false;
+  projectsContainer.addEventListener('scroll', () => {
+    if (!scrolling) {
+      requestAnimationFrame(() => {
+        const scrollWidth = projectsContainer.scrollWidth / 2;
+        if (projectsContainer.scrollLeft >= scrollWidth) {
+          projectsContainer.scrollLeft -= scrollWidth;
+        } else if (projectsContainer.scrollLeft <= 0) {
+          projectsContainer.scrollLeft += scrollWidth;
+        }
+        scrolling = false;
+      });
+    }
+    scrolling = true;
+  });
+}
