@@ -102,9 +102,8 @@ body::before {
   display: flex;
   flex-direction: column;
   gap: 3rem;
-  padding: 4rem 2rem 2rem;
+  padding: 4rem;
   height: 100%;
-  max-width: 55rem;
   position: relative;
   z-index: 2;
   overflow: visible;
