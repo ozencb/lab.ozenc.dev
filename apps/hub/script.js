@@ -17,6 +17,14 @@ const getRandomColor = () => {
   return accentColors[colorIndex];
 };
 
+const shuffleArray = array => {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+};
+
 const getStyledProjects = projects =>
   projects.map(project => ({
     ...project,
@@ -163,13 +171,15 @@ const setupMarquees = projects => {
     projectsList.removeChild(projectsList.firstChild);
   }
 
-  const marquee1 = createMarquee(projects);
-  const marquee2 = createMarquee(projects, true);
+  const marquee1 = createMarquee(shuffleArray(projects));
+  const marquee2 = createMarquee(shuffleArray(projects), true);
+  const marquee3 = createMarquee(shuffleArray(projects));
 
   projectsList.appendChild(marquee1.element);
   projectsList.appendChild(marquee2.element);
+  projectsList.appendChild(marquee3.element);
 
-  stopFunctions.push(marquee1.stop, marquee2.stop);
+  stopFunctions.push(marquee1.stop, marquee2.stop, marquee3.stop);
 };
 
 const init = async () => {
