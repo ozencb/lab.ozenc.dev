@@ -177,10 +177,6 @@ body::before {
   padding-inline-start: 2rem;
 }
 
-.marquee:hover {
-  animation-play-state: paused;
-}
-
 .marquee.reverse {
   animation-direction: reverse;
 }

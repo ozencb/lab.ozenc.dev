@@ -83,10 +83,9 @@ const createMarquee = (projects, reverse = false) => {
   let animationId;
 
   const calculateWidth = () => {
-    // Temporarily append to DOM to calculate width
     const tempWrapper = document.createElement('div');
     tempWrapper.style.position = 'absolute';
-    tempWrapper.style.left = '-9999px'; // Hide it off-screen
+    tempWrapper.style.left = '-9999px';
     const tempMarqueeContent = marqueeContent.cloneNode(true);
     tempWrapper.appendChild(tempMarqueeContent);
     document.body.appendChild(tempWrapper);
@@ -119,13 +118,11 @@ const createMarquee = (projects, reverse = false) => {
 
     function step() {
       if (reverse) {
-        // scrolls left
         position -= speed;
         if (position <= -contentWidth) {
           position = 0;
         }
       } else {
-        // scrolls right
         position += speed;
         if (position >= 0) {
           position = -contentWidth;
@@ -144,11 +141,18 @@ const createMarquee = (projects, reverse = false) => {
 
     marquee.style.transform = `translateX(${position}px)`;
     animationId = requestAnimationFrame(step);
+
+    marqueeWrapper.addEventListener('mouseenter', () => {
+      cancelAnimationFrame(animationId);
+    });
+
+    marqueeWrapper.addEventListener('mouseleave', () => {
+      animationId = requestAnimationFrame(step);
+    });
   };
 
   animateMarquee();
 
-  // Return wrapper and a function to stop the animation
   return {
     element: marqueeWrapper,
     stop: () => cancelAnimationFrame(animationId),
@@ -159,19 +163,17 @@ let projectsData = [];
 let stopFunctions = [];
 
 const setupMarquees = projects => {
-  // Stop any existing animations
   stopFunctions.forEach(stop => stop());
   stopFunctions = [];
 
   const projectsList = document.getElementById('projects');
   if (!projectsList || !projects.length) return;
 
-  // Clear any existing content
   while (projectsList.firstChild) {
     projectsList.removeChild(projectsList.firstChild);
   }
 
-  const MARQUEE_ROW_HEIGHT = 320; // Estimated height of a marquee row in pixels
+  const MARQUEE_ROW_HEIGHT = 320;
   const numMarquees = Math.max(
     1,
     Math.floor(projectsList.offsetHeight / MARQUEE_ROW_HEIGHT)
@@ -179,7 +181,6 @@ const setupMarquees = projects => {
 
   for (let i = 0; i < numMarquees; i++) {
     const isReverse = i % 2 !== 0;
-    // Create a new shuffled array for each marquee to ensure variety
     const shuffledProjects = shuffleArray([...projects]);
     const marquee = createMarquee(shuffledProjects, isReverse);
 
@@ -195,7 +196,7 @@ const init = async () => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const { projects } = await response.json();
-    projectsData = projects; // Store the fetched data
+    projectsData = projects;
     setupMarquees(projectsData);
   } catch (error) {
     console.error('Failed to load projects:', error);
@@ -210,7 +211,7 @@ const init = async () => {
 let resizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => setupMarquees(projectsData), 250); // Use stored data on resize
+  resizeTimer = setTimeout(() => setupMarquees(projectsData), 250);
 });
 
 init();
