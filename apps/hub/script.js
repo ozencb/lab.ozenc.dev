@@ -164,22 +164,28 @@ const setupMarquees = projects => {
   stopFunctions = [];
 
   const projectsList = document.getElementById('projects');
-  if (!projectsList) return;
+  if (!projectsList || !projects.length) return;
 
   // Clear any existing content
   while (projectsList.firstChild) {
     projectsList.removeChild(projectsList.firstChild);
   }
 
-  const marquee1 = createMarquee(shuffleArray(projects));
-  const marquee2 = createMarquee(shuffleArray(projects), true);
-  const marquee3 = createMarquee(shuffleArray(projects));
+  const MARQUEE_ROW_HEIGHT = 320; // Estimated height of a marquee row in pixels
+  const numMarquees = Math.max(
+    1,
+    Math.floor(projectsList.offsetHeight / MARQUEE_ROW_HEIGHT)
+  );
 
-  projectsList.appendChild(marquee1.element);
-  projectsList.appendChild(marquee2.element);
-  projectsList.appendChild(marquee3.element);
+  for (let i = 0; i < numMarquees; i++) {
+    const isReverse = i % 2 !== 0;
+    // Create a new shuffled array for each marquee to ensure variety
+    const shuffledProjects = shuffleArray([...projects]);
+    const marquee = createMarquee(shuffledProjects, isReverse);
 
-  stopFunctions.push(marquee1.stop, marquee2.stop, marquee3.stop);
+    projectsList.appendChild(marquee.element);
+    stopFunctions.push(marquee.stop);
+  }
 };
 
 const init = async () => {
