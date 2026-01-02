@@ -132,7 +132,10 @@ body::before {
   width: 100vw;
   margin-left: calc(-50vw + 50%);
   position: relative;
-  padding: 2rem 0;
+  padding-block: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
 .projects::before,
@@ -157,9 +160,7 @@ body::before {
 }
 
 .marquee-wrapper {
-  overflow-x: auto;
-  overflow-y: hidden;
-  cursor: grab;
+  overflow: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -168,34 +169,25 @@ body::before {
   display: none;
 }
 
-.marquee-wrapper:active {
-  cursor: grabbing;
-}
-
-.marquee-wrapper.is-dragging {
-  cursor: grabbing;
-}
-
-.marquee-wrapper.is-dragging .project-card {
-  pointer-events: none;
-}
-
 .marquee {
   display: flex;
-  gap: 2rem;
   width: fit-content;
-  padding: 0 2rem;
-}
-
-.marquee {
-  display: flex;
-  gap: 2rem;
   animation: scroll 40s linear infinite;
+}
+
+.marquee-content {
+  display: flex;
+  gap: 2rem;
   width: fit-content;
+  padding-inline-start: 2rem;
 }
 
 .marquee:hover {
   animation-play-state: paused;
+}
+
+.marquee.reverse {
+  animation-direction: reverse;
 }
 
 @keyframes scroll {
@@ -219,68 +211,9 @@ body::before {
   cursor: pointer;
 }
 
-.project-card:nth-child(1) {
-  background-color: var(--color-accent-yellow);
-  box-shadow: 10px 10px 0 var(--color-bg-black);
-}
-
-.project-card:nth-child(1):hover {
-  transform: translate(3px, 3px);
-  box-shadow: 7px 7px 0 var(--color-bg-black);
-}
-
-.project-card:nth-child(2) {
-  background-color: var(--color-accent-green);
-  box-shadow: 10px 10px 0 var(--color-bg-black);
-  transform: rotate(0.5deg);
-}
-
-.project-card:nth-child(2):hover {
-  transform: rotate(0deg) translate(3px, 3px);
-  box-shadow: 7px 7px 0 var(--color-bg-black);
-}
-
-.project-card:nth-child(3) {
-  background-color: var(--color-accent-pink);
-  box-shadow: 10px 10px 0 var(--color-bg-black);
-  transform: rotate(-0.5deg);
-}
-
-.project-card:nth-child(3):hover {
-  transform: rotate(0deg) translate(3px, 3px);
-  box-shadow: 7px 7px 0 var(--color-bg-black);
-}
-
-.project-card:nth-child(4) {
-  background-color: var(--color-accent-purple);
-  box-shadow: 10px 10px 0 var(--color-bg-black);
-}
-
-.project-card:nth-child(4):hover {
-  transform: translate(3px, 3px);
-  box-shadow: 7px 7px 0 var(--color-bg-black);
-}
-
-.project-card:nth-child(5) {
-  background-color: var(--color-accent-cyan);
-  box-shadow: 10px 10px 0 var(--color-bg-black);
-  transform: rotate(0.3deg);
-}
-
-.project-card:nth-child(5):hover {
-  transform: rotate(0deg) translate(3px, 3px);
-  box-shadow: 7px 7px 0 var(--color-bg-black);
-}
-
-/* Fallback for additional cards */
-.project-card:nth-child(n + 6) {
-  background-color: var(--color-accent-orange);
-  box-shadow: 10px 10px 0 var(--color-bg-black);
-}
-
-.project-card:nth-child(n + 6):hover {
-  transform: translate(3px, 3px);
-  box-shadow: 7px 7px 0 var(--color-bg-black);
+.project-card:hover {
+  transform: translate(3px, 3px) !important;
+  box-shadow: 7px 7px 0 var(--color-bg-black) !important;
 }
 
 .project-link {

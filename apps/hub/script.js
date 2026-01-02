@@ -8,17 +8,41 @@ fetch('/api/projects')
   .then(({ projects }) => {
     const projectsList = document.getElementById('projects');
 
-    const marqueeWrapper = document.createElement('div');
-    marqueeWrapper.classList.add('marquee-wrapper');
+    const accentColors = [
+      'var(--color-accent-yellow)',
+      'var(--color-accent-green)',
+      'var(--color-accent-pink)',
+      'var(--color-accent-purple)',
+      'var(--color-accent-cyan)',
+      'var(--color-accent-orange)',
+    ];
+    let lastColorIndex = -1;
 
-    const marquee = document.createElement('div');
-    marquee.classList.add('marquee');
+    const getRandomColor = () => {
+      let colorIndex;
+      do {
+        colorIndex = Math.floor(Math.random() * accentColors.length);
+      } while (accentColors.length > 1 && colorIndex === lastColorIndex);
+      lastColorIndex = colorIndex;
+      return accentColors[colorIndex];
+    };
+
+    const getStyledProjects = () =>
+      projects.map(project => ({
+        ...project,
+        color: getRandomColor(),
+        rotation: (Math.random() - 0.5) * 1.2,
+      }));
 
     const createProjectCards = projectsArray => {
       const fragment = document.createDocumentFragment();
       projectsArray.forEach(project => {
         const div = document.createElement('div');
         div.classList.add('project-card');
+
+        div.style.backgroundColor = project.color;
+        div.style.boxShadow = '10px 10px 0 var(--color-bg-black)';
+        div.style.transform = `rotate(${project.rotation}deg)`;
 
         const a = document.createElement('a');
         a.classList.add('project-link');
@@ -41,94 +65,35 @@ fetch('/api/projects')
       return fragment;
     };
 
-    for (let i = 0; i < 3; i++) {
-      marquee.appendChild(createProjectCards(projects));
-    }
+    const createMarqueeContent = () => {
+      const marqueeContent = document.createElement('div');
+      marqueeContent.classList.add('marquee-content');
+      const projectCards = createProjectCards(getStyledProjects());
+      marqueeContent.appendChild(projectCards);
 
-    marqueeWrapper.appendChild(marquee);
-    projectsList.appendChild(marqueeWrapper);
-
-    const initDragScroll = wrapper => {
-      let isDown = false;
-      let startX;
-      let scrollLeft;
-      let hasMoved = false;
-
-      const handleDragStart = e => {
-        isDown = true;
-        startX = e.pageX - wrapper.offsetLeft;
-        scrollLeft = wrapper.scrollLeft;
-        hasMoved = false;
-      };
-
-      const handleDragEnd = () => {
-        isDown = false;
-        wrapper.classList.remove('is-dragging');
-      };
-
-      const handleDragMove = e => {
-        if (!isDown) return;
-        const x = e.pageX - wrapper.offsetLeft;
-        const walk = (x - startX) * 2;
-
-        if (Math.abs(walk) > 5) {
-          hasMoved = true;
-          wrapper.classList.add('is-dragging');
-          e.preventDefault();
-          wrapper.scrollLeft = scrollLeft - walk;
-        }
-      };
-
-      const handleClick = e => {
-        if (hasMoved) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      };
-
-      wrapper.addEventListener('mousedown', handleDragStart);
-      wrapper.addEventListener('mouseleave', handleDragEnd);
-      wrapper.addEventListener('mouseup', handleDragEnd);
-      wrapper.addEventListener('mousemove', handleDragMove);
-      wrapper.addEventListener('click', handleClick, true);
+      return marqueeContent;
     };
 
-    const initTouchScroll = wrapper => {
-      let touchStartX = 0;
-      let touchScrollLeft = 0;
-      let hasTouchMoved = false;
+    const createMarquee = (reverse = false) => {
+      const marqueeWrapper = document.createElement('div');
+      marqueeWrapper.classList.add('marquee-wrapper');
 
-      const handleTouchStart = e => {
-        touchStartX = e.touches[0].pageX;
-        touchScrollLeft = wrapper.scrollLeft;
-        hasTouchMoved = false;
-      };
+      const marquee = document.createElement('div');
+      marquee.classList.add('marquee');
+      if (reverse) {
+        marquee.classList.add('reverse');
+      }
 
-      const handleTouchMove = e => {
-        const x = e.touches[0].pageX;
-        const walk = (touchStartX - x) * 1.5;
+      marquee.appendChild(createMarqueeContent());
+      marquee.appendChild(createMarqueeContent());
+      marquee.appendChild(createMarqueeContent());
 
-        if (Math.abs(walk) > 5) {
-          hasTouchMoved = true;
-        }
-
-        wrapper.scrollLeft = touchScrollLeft + walk;
-      };
-
-      const handleTouchClick = e => {
-        if (hasTouchMoved) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      };
-
-      wrapper.addEventListener('touchstart', handleTouchStart);
-      wrapper.addEventListener('touchmove', handleTouchMove);
-      wrapper.addEventListener('click', handleTouchClick, true);
+      marqueeWrapper.appendChild(marquee);
+      return marqueeWrapper;
     };
 
-    initDragScroll(marqueeWrapper);
-    initTouchScroll(marqueeWrapper);
+    projectsList.appendChild(createMarquee());
+    projectsList.appendChild(createMarquee(true));
   })
   .catch(error => {
     console.error('Failed to load projects:', error);
