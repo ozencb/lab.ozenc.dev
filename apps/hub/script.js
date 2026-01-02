@@ -63,7 +63,7 @@ const createProjectCards = projectsArray => {
   return fragment;
 };
 
-const createMarquee = (projects, reverse = false) => {
+const createMarquee = (projects, reverse = false, isMobile = false) => {
   const marqueeWrapper = document.createElement('div');
   marqueeWrapper.classList.add('marquee-wrapper');
 
@@ -78,6 +78,15 @@ const createMarquee = (projects, reverse = false) => {
 
   const styledProjects = getStyledProjects(projects);
   marqueeContent.appendChild(createProjectCards(styledProjects));
+
+  if (isMobile) {
+    marquee.appendChild(marqueeContent);
+    marqueeWrapper.appendChild(marquee);
+    return {
+      element: marqueeWrapper,
+      stop: () => {},
+    };
+  }
 
   let contentWidth = 0;
   let animationId;
@@ -161,6 +170,7 @@ const createMarquee = (projects, reverse = false) => {
 
 let projectsData = [];
 let stopFunctions = [];
+let isMobile = window.innerWidth <= 768;
 
 const setupMarquees = projects => {
   stopFunctions.forEach(stop => stop());
@@ -173,19 +183,26 @@ const setupMarquees = projects => {
     projectsList.removeChild(projectsList.firstChild);
   }
 
-  const MARQUEE_ROW_HEIGHT = 320;
-  const numMarquees = Math.max(
-    1,
-    Math.floor(projectsList.offsetHeight / MARQUEE_ROW_HEIGHT)
-  );
-
-  for (let i = 0; i < numMarquees; i++) {
-    const isReverse = i % 2 !== 0;
+  if (isMobile) {
     const shuffledProjects = shuffleArray([...projects]);
-    const marquee = createMarquee(shuffledProjects, isReverse);
-
+    const marquee = createMarquee(shuffledProjects, false, true);
     projectsList.appendChild(marquee.element);
     stopFunctions.push(marquee.stop);
+  } else {
+    const MARQUEE_ROW_HEIGHT = 320;
+    const numMarquees = Math.max(
+      1,
+      Math.floor(projectsList.offsetHeight / MARQUEE_ROW_HEIGHT)
+    );
+
+    for (let i = 0; i < numMarquees; i++) {
+      const isReverse = i % 2 !== 0;
+      const shuffledProjects = shuffleArray([...projects]);
+      const marquee = createMarquee(shuffledProjects, isReverse);
+
+      projectsList.appendChild(marquee.element);
+      stopFunctions.push(marquee.stop);
+    }
   }
 };
 
@@ -211,7 +228,39 @@ const init = async () => {
 let resizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => setupMarquees(projectsData), 250);
+  resizeTimer = setTimeout(() => {
+    const mobileCheck = window.innerWidth <= 768;
+    if (mobileCheck !== isMobile) {
+      isMobile = mobileCheck;
+      setupMarquees(projectsData);
+    }
+  }, 250);
 });
 
 init();
+
+let isDragging = false;
+let startY;
+let scrollTop;
+
+const projectsContainer = document.getElementById('projects');
+
+projectsContainer.addEventListener('touchstart', e => {
+  isDragging = true;
+  startY = e.touches[0].pageY - projectsContainer.offsetTop;
+  scrollTop = projectsContainer.scrollTop;
+  projectsContainer.style.cursor = 'grabbing';
+});
+
+projectsContainer.addEventListener('touchend', () => {
+  isDragging = false;
+  projectsContainer.style.cursor = 'grab';
+});
+
+projectsContainer.addEventListener('touchmove', e => {
+  if (!isDragging) return;
+  e.preventDefault();
+  const y = e.touches[0].pageY - projectsContainer.offsetTop;
+  const walk = (y - startY) * 2; // Multiplier for faster scrolling
+  projectsContainer.scrollTop = scrollTop - walk;
+});
