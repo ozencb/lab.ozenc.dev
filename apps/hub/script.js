@@ -147,7 +147,14 @@ const createMarquee = (projects, reverse = false) => {
   };
 };
 
+let projectsData = [];
+let stopFunctions = [];
+
 const setupMarquees = projects => {
+  // Stop any existing animations
+  stopFunctions.forEach(stop => stop());
+  stopFunctions = [];
+
   const projectsList = document.getElementById('projects');
   if (!projectsList) return;
 
@@ -162,10 +169,8 @@ const setupMarquees = projects => {
   projectsList.appendChild(marquee1.element);
   projectsList.appendChild(marquee2.element);
 
-  return [marquee1.stop, marquee2.stop];
+  stopFunctions.push(marquee1.stop, marquee2.stop);
 };
-
-let stopFunctions = [];
 
 const init = async () => {
   try {
@@ -174,7 +179,8 @@ const init = async () => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const { projects } = await response.json();
-    stopFunctions = setupMarquees(projects);
+    projectsData = projects; // Store the fetched data
+    setupMarquees(projectsData);
   } catch (error) {
     console.error('Failed to load projects:', error);
     const projectsList = document.getElementById('projects');
@@ -187,9 +193,8 @@ const init = async () => {
 
 let resizeTimer;
 window.addEventListener('resize', () => {
-  stopFunctions.forEach(stop => stop());
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(init, 250); // Debounce resize event
+  resizeTimer = setTimeout(() => setupMarquees(projectsData), 250); // Use stored data on resize
 });
 
 init();
