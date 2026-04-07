@@ -134,7 +134,7 @@ projectRouter.get(
   '/assets/:asset',
   async (req: Request, res: Response, next: NextFunction) => {
     const { asset } = req.params;
-    await assetHandler(asset, req, res, next);
+    await assetHandler(asset as string, req, res, next);
   }
 );
 
@@ -206,7 +206,7 @@ projectRouter.get(
         });
       }
     } else {
-      return await assetHandler(slugOrAsset, req, res, next);
+      return await assetHandler(slugOrAsset as string, req, res, next);
     }
   }
 );
